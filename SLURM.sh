@@ -12,5 +12,6 @@
 #SBATCH --mail-user=sherz22@ku.edu.tr    
 module load python/3.6.1
 moddule load cuda/11.4
-module load 8.2.2/cuda-11.4     
+module load 8.2.2/cuda-11.4 
+source ~/CVADHW1/venv/Scripts/activate    
 python cilrs_train.py
