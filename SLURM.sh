@@ -11,6 +11,6 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=sherz22@ku.edu.tr    
 module load python/3.9.5
-module load cuda/11.4
-module load cudnn/8.2.2/cuda-11.4
+module load cuda/11.7
+module load cudnn/8.2.2/cuda-11.7
 python cilrs_train.py
