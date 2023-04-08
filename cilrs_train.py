@@ -103,7 +103,7 @@ def main():
 
     # You can change these hyper parameters freely, and you can add more
     num_epochs = 10
-    batch_size = 32
+    batch_size = 64
     save_path = "cilrs_model.ckpt"
     checkpoint = "cilrs_checkpoint.pt"
 
