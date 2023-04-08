@@ -43,7 +43,7 @@ class ExpertDataset(Dataset):
         ])
 
     def __len__(self):
-        return len(self.json_files)
+        return len(self.json_files[:100])
 
     def __getitem__(self, index):
         """Return RGB images and measurements"""

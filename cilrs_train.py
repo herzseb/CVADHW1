@@ -31,7 +31,7 @@ def validate(model, dataloader, criterion):
             target = target.to('cpu')
             loss = criterion(outputs, target)
             running_loss += loss.item()
-        return running_loss/(i * img.size[0])
+        return running_loss/(i * img.size()[0])
 
 
 def train(model, iters, optimizer, criterion):
@@ -78,7 +78,7 @@ def train(model, iters, optimizer, criterion):
             if left_fin and right_fin and straight_fin and followlane_fin:
                 break
 
-    avg_loss = running_loss/(iter * img.size[0])
+    avg_loss = running_loss/(iter * img.size()[0])
     print(avg_loss)
     return avg_loss
 
