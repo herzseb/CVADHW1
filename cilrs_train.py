@@ -31,7 +31,9 @@ def validate(model, dataloader, criterion, batchsize):
             target = target.to('cpu')
             loss = criterion(outputs, target)
             running_loss += loss.item()
-        return running_loss/((i+1) * batchsize)
+        avg_loss = running_loss/((i+1) * batchsize)
+        print("avg train loss ", avg_loss)
+        return avg_loss
 
 
 def train(model, iters, optimizer, criterion, batchsize):
@@ -78,7 +80,7 @@ def train(model, iters, optimizer, criterion, batchsize):
                 break
 
     avg_loss = running_loss/((iter+1) * batchsize)
-    print(avg_loss)
+    print("avg train loss ", avg_loss)
     return avg_loss
 
 
@@ -134,6 +136,7 @@ def main():
     best_val_loss = 10000
     early_stopper = 0
     for i in range(num_epochs):
+        print("EPOCH ", i)
         train_losses.append(train(model, iters, optimizer, criterion, batch_size))
         val_losses.append(validate(model, val_loader, criterion, batch_size))
         torch.save({
