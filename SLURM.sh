@@ -2,10 +2,11 @@
 #SBATCH --job-name=CILRS            
 #SBATCH --nodes=1        
 #SBATCH --ntasks-per-node=4 
+#SBATCH -–mem-per-cpu=14000
 #SBATCH --partition=long
 #SBATCH --qos=users        
 #SBATCH --account=users    
-#SBATCH --gres=gpu:tesla_t4:1    
+#SBATCH --gres=gpu:tesla_t4:3   
 #SBATCH --time=7:0:0        
 #SBATCH --output=test-%j.out    
 #SBATCH --mail-type=ALL
