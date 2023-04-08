@@ -31,7 +31,7 @@ def validate(model, dataloader, criterion, batchsize):
             target = target.to('cpu')
             loss = criterion(outputs, target)
             running_loss += loss.item()
-        return running_loss/(i * batchsize)
+        return running_loss/((i+1) * batchsize)
 
 
 def train(model, iters, optimizer, criterion, batchsize):
@@ -63,7 +63,7 @@ def train(model, iters, optimizer, criterion, batchsize):
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-            iter = iter + 1
+            iter += 1
 
         except StopIteration:
             if curr_iter == iters[0]:
@@ -77,7 +77,7 @@ def train(model, iters, optimizer, criterion, batchsize):
             if left_fin and right_fin and straight_fin and followlane_fin:
                 break
 
-    avg_loss = running_loss/(iter * batchsize)
+    avg_loss = running_loss/((iter+1) * batchsize)
     print(avg_loss)
     return avg_loss
 
