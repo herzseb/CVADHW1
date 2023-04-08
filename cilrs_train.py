@@ -66,6 +66,7 @@ def train(model, iters, optimizer, criterion, batchsize):
             optimizer.step()
             running_loss += loss.item()
             iter += 1
+            print(loss.item())
 
         except StopIteration:
             if curr_iter == iters[0]:
