@@ -9,7 +9,7 @@ from models.cilrs import CILRS
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-def validate(model, dataloader, criterion):
+def validate(model, dataloader, criterion, batchsize):
     """Validate model performance on the validation dataset"""
     running_loss = 0
     model.eval()
@@ -31,10 +31,10 @@ def validate(model, dataloader, criterion):
             target = target.to('cpu')
             loss = criterion(outputs, target)
             running_loss += loss.item()
-        return running_loss/(i * img.size()[0])
+        return running_loss/(i * batchsize)
 
 
-def train(model, iters, optimizer, criterion):
+def train(model, iters, optimizer, criterion, batchsize):
     """Train model on the training dataset for one epoch"""
     running_loss = 0.0
     iter = 0
@@ -62,7 +62,6 @@ def train(model, iters, optimizer, criterion):
             loss = criterion(outputs, target)
             loss.backward()
             optimizer.step()
-            print(iter, " ", loss.item())
             running_loss += loss.item()
             iter = iter + 1
 
@@ -78,7 +77,7 @@ def train(model, iters, optimizer, criterion):
             if left_fin and right_fin and straight_fin and followlane_fin:
                 break
 
-    avg_loss = running_loss/(iter * img.size()[0])
+    avg_loss = running_loss/(iter * batchsize)
     print(avg_loss)
     return avg_loss
 
@@ -132,15 +131,24 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=0.0002)
     train_losses = []
     val_losses = []
+    best_val_loss = 10000
+    early_stopper = 0
     for i in range(num_epochs):
-        train_losses.append(train(model, iters, optimizer, criterion))
-        val_losses.append(validate(model, val_loader, criterion))
+        train_losses.append(train(model, iters, optimizer, criterion, batch_size))
+        val_losses.append(validate(model, val_loader, criterion, batch_size))
         torch.save({
             'epoch': i,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
         }, checkpoint)
-    torch.save(model, save_path)
+        if val_losses[-1] < best_val_loss:
+            torch.save(model, save_path)
+            early_stopper = 0
+            best_val_loss = val_losses[-1]
+        else:
+            early_stopper += 1
+        if early_stopper >= 5:
+            break
     plot_losses(train_losses, val_losses)
 
 
