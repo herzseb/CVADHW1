@@ -52,9 +52,11 @@ def train(model, iters, optimizer, criterion):
             optimizer.zero_grad()
 
             img = img.to(device)
+            speed = speed.to(device)
             outputs = model(
                 img=img, command=labels["command"], measured_speed=speed)
             outputs = outputs.to('cpu')
+            target = target.to('cpu')
             loss = criterion(outputs, target)
             loss.backward()
             optimizer.step()
