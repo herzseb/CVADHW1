@@ -87,7 +87,7 @@ def plot_losses(train_loss, val_loss):
     plt.plot(train_loss, label='train_loss')
     plt.plot(val_loss, label='val_loss')
     plt.legend()
-    plt.show
+    plt.savefig()
     pass
 
 
