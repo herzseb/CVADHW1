@@ -38,6 +38,7 @@ def validate(model, dataloader, criterion, batchsize):
 
 def train(model, iters, optimizer, criterion, batchsize):
     """Train model on the training dataset for one epoch"""
+    model.train()
     running_loss = 0.0
     iter = 0
     left_fin, right_fin, straight_fin, followlane_fin = False, False, False, False
@@ -91,7 +92,6 @@ def plot_losses(train_loss, val_loss):
     plt.plot(val_loss, label='val_loss')
     plt.legend()
     plt.savefig("train_plot.png")
-    pass
 
 
 def main():
