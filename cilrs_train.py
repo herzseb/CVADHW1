@@ -105,7 +105,7 @@ def main():
     num_epochs = 10
     batch_size = 32
     save_path = "cilrs_model.ckpt"
-    checkpoint = "checkpoint.pt"
+    checkpoint = "cilrs_checkpoint.pt"
 
     train_loader_left = DataLoader(train_dataset_left, batch_size=batch_size, shuffle=True,
                                    drop_last=True)
@@ -113,7 +113,7 @@ def main():
                                     drop_last=True)
     train_loader_straight = DataLoader(train_dataset_staright, batch_size=batch_size, shuffle=True,
                                        drop_last=True)
-    train_loader_followlane = DataLoader(train_dataset_lanefollow, batch_size=1, shuffle=True,
+    train_loader_followlane = DataLoader(train_dataset_lanefollow, batch_size=2, shuffle=True,
                                          drop_last=True)
 
     loader_iter_left = iter(train_loader_left)
