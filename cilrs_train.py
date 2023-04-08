@@ -32,7 +32,7 @@ def validate(model, dataloader, criterion, batchsize):
             loss = criterion(outputs, target)
             running_loss += loss.item()
         avg_loss = running_loss/((i+1) * batchsize)
-        print("avg train loss ", avg_loss)
+        print("avg val loss ", avg_loss)
         return avg_loss
 
 
@@ -118,7 +118,7 @@ def main():
                                     drop_last=True, num_workers=4)
     train_loader_straight = DataLoader(train_dataset_staright, batch_size=batch_size, shuffle=True,
                                        drop_last=True, num_workers=4)
-    train_loader_followlane = DataLoader(train_dataset_lanefollow, batch_size=2, shuffle=True,
+    train_loader_followlane = DataLoader(train_dataset_lanefollow, batch_size=batch_size, shuffle=True,
                                          drop_last=True, num_workers=4)
 
     loader_iter_left = iter(train_loader_left)
@@ -128,7 +128,7 @@ def main():
 
     iters = [loader_iter_left, loader_iter_right,
              loader_iter_straight, loader_iter_followlane]
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     criterion = torch.nn.L1Loss()
     optimizer = optim.Adam(model.parameters(), lr=0.0002)
     train_losses = []
@@ -138,7 +138,7 @@ def main():
     for i in range(num_epochs):
         print("EPOCH ", i)
         train_losses.append(train(model, iters, optimizer, criterion, batch_size))
-        val_losses.append(validate(model, val_loader, criterion, batch_size))
+        val_losses.append(validate(model, val_loader, criterion, 1))
         torch.save({
             'epoch': i,
             'model_state_dict': model.state_dict(),
