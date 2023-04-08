@@ -2,7 +2,7 @@
 #SBATCH --job-name=CILRS            
 #SBATCH --nodes=1        
 #SBATCH --ntasks-per-node=4 
-#SBATCH --partition=shallowai  
+#SBATCH --partition=long
 #SBATCH --qos=users        
 #SBATCH --account=users    
 #SBATCH --gres=gpu:tesla_t4:1    
