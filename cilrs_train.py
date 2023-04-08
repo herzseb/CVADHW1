@@ -24,9 +24,11 @@ def validate(model, dataloader, criterion):
 
             target = torch.concat((throttle, brake, steer, speed), dim=1)
             img = img.to(device)
+            speed = speed.to(device)
             outputs = model(
                 img=img, command=labels["command"], measured_speed=speed)
             outputs = outputs.to('cpu')
+            target = target.to('cpu')
             loss = criterion(outputs, target)
             running_loss += loss.item()
         return running_loss/(i * img.size[0])
