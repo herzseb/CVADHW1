@@ -1,7 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=CILRS            
-#SBATCH --ntasks=5
-#SBATCH –-mem-per-cpu=10000    
+#SBATCH --ntasks=5   
 #SBATCH --ntasks-per-node=1    
 #SBATCH --partition=long       
 #SBATCH --qos=users        
