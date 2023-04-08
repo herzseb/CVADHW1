@@ -110,13 +110,13 @@ def main():
     checkpoint = "cilrs_checkpoint.pt"
 
     train_loader_left = DataLoader(train_dataset_left, batch_size=batch_size, shuffle=True,
-                                   drop_last=True)
+                                   drop_last=True, num_workers=4)
     train_loader_right = DataLoader(train_dataset_right, batch_size=batch_size, shuffle=True,
-                                    drop_last=True)
+                                    drop_last=True, num_workers=4)
     train_loader_straight = DataLoader(train_dataset_staright, batch_size=batch_size, shuffle=True,
-                                       drop_last=True)
+                                       drop_last=True, num_workers=4)
     train_loader_followlane = DataLoader(train_dataset_lanefollow, batch_size=2, shuffle=True,
-                                         drop_last=True)
+                                         drop_last=True, num_workers=4)
 
     loader_iter_left = iter(train_loader_left)
     loader_iter_right = iter(train_loader_right)
