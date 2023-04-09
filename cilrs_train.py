@@ -74,9 +74,9 @@ def train(model, loaders, optimizer, criterion, batchsize):
             optimizer.step()
             running_loss += loss.item()
             it += 1
+            print(it)
 
-        except StopIteration as e:
-            print(e)
+        except StopIteration:
             if curr_iter == iters[0]:
                 left_fin = True
             elif curr_iter == iters[1]:
@@ -117,7 +117,7 @@ def main():
     val_dataset = ExpertDataset(val_root, transform=True)
 
     # You can change these hyper parameters freely, and you can add more
-    num_epochs = 10
+    num_epochs = 50
     batch_size = 64
     save_path = "cilrs_model.ckpt"
     checkpoint = "cilrs_checkpoint.pt"
@@ -155,7 +155,7 @@ def main():
             best_val_loss = val_losses[-1]
         else:
             early_stopper += 1
-        if early_stopper >= 5:
+        if early_stopper >= 10:
             break
     plot_losses(train_losses, val_losses)
 

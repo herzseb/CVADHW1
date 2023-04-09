@@ -8,36 +8,55 @@ class CILRS(nn.Module):
         super(CILRS, self).__init__()
         self.resnet = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=True)
         self.resnet.train()
+        self.dropout = 0.2
         self.speed_encoding = nn.Sequential(
-          nn.Linear(1,512),
+          nn.Linear(1,64),
+          nn.BatchNorm1d(64),
           nn.ReLU(),
-          nn.Linear(512,512),
+          nn.Dropout(p=self.dropout),
+          nn.Linear(64,128),
+          nn.ReLU()
         )
         self.speed_prediction = nn.Sequential(
-          nn.Linear(512,512),
+          nn.Linear(512,128),
+          nn.BatchNorm1d(128),
           nn.ReLU(),
-          nn.Linear(512,1),
+          nn.Dropout(p=self.dropout),
+          nn.Linear(128,1),
         )
-        self.after_concat = nn.Linear(1512, 512)
-        self.action_straight = nn.Sequential(
-          nn.Linear(512,512),
+        self.after_concat = nn.Sequential(
+          nn.Linear(1128,512),
+          nn.BatchNorm1d(512),
           nn.ReLU(),
-          nn.Linear(512,3),
+          nn.Dropout(p=self.dropout),
+        )
+        self.action_straight = nn.Sequential(
+          nn.Linear(512,128),
+          nn.BatchNorm1d(128),
+          nn.ReLU(),
+          nn.Dropout(p=self.dropout),
+          nn.Linear(128,3)
         )
         self.action_left = nn.Sequential(
-          nn.Linear(512,512),
+          nn.Linear(512,128),
+          nn.BatchNorm1d(128),
           nn.ReLU(),
-          nn.Linear(512,3),
+          nn.Dropout(p=self.dropout),
+          nn.Linear(128,3)
         )
         self.action_right = nn.Sequential(
-          nn.Linear(512,512),
+          nn.Linear(512,128),
+          nn.BatchNorm1d(128),
           nn.ReLU(),
-          nn.Linear(512,3),
+          nn.Dropout(p=self.dropout),
+          nn.Linear(128,3)
         )
         self.action_follow = nn.Sequential(
-          nn.Linear(512,512),
+          nn.Linear(512,128),
+          nn.BatchNorm1d(128),
           nn.ReLU(),
-          nn.Linear(512,3),
+          nn.Dropout(p=self.dropout),
+          nn.Linear(128,3)
         )
 
 
