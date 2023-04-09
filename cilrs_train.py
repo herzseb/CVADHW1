@@ -134,7 +134,7 @@ def main():
 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     criterion = torch.nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.00005)
+    optimizer = optim.Adam(model.parameters(), lr=0.000005)
     train_losses = []
     val_losses = []
     best_val_loss = 10000
