@@ -36,12 +36,19 @@ def validate(model, dataloader, criterion, batchsize):
         return avg_loss
 
 
-def train(model, iters, optimizer, criterion, batchsize):
+def train(model, loaders, optimizer, criterion, batchsize):
     """Train model on the training dataset for one epoch"""
     model.train()
     running_loss = 0.0
-    iter = 0
+    it = 0
     left_fin, right_fin, straight_fin, followlane_fin = False, False, False, False
+    loader_iter_left = iter(loaders[0])
+    loader_iter_right = iter(loaders[1])
+    loader_iter_straight = iter(loaders[2])
+    loader_iter_followlane = iter(loaders[3])
+
+    iters = [loader_iter_left, loader_iter_right,
+             loader_iter_straight, loader_iter_followlane]
     while True:
         try:
             curr_iter = random.choices(iters, weights=(1, 1, 1, 30))[0]
@@ -66,8 +73,7 @@ def train(model, iters, optimizer, criterion, batchsize):
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-            iter += 1
-            print(loss.item())
+            it += 1
 
         except StopIteration as e:
             print(e)
@@ -82,7 +88,7 @@ def train(model, iters, optimizer, criterion, batchsize):
             if left_fin and right_fin and straight_fin and followlane_fin:
                 break
 
-    avg_loss = running_loss/((iter+1) * batchsize)
+    avg_loss = running_loss/((it+1) * batchsize)
     print("avg train loss ", avg_loss)
     return avg_loss
 
@@ -99,6 +105,8 @@ def main():
     # Change these paths to the correct paths in your downloaded expert dataset
     train_root = "/userfiles/ssafadoust20/expert_data/train"
     val_root = "/userfiles/ssafadoust20/expert_data/val"
+    # train_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\train\\"
+    # val_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\val\\"
     model = CILRS().to(device)
     train_dataset_left = ExpertDataset(train_root, transform=True, command=0)
     train_dataset_right = ExpertDataset(train_root, transform=True, command=1)
@@ -122,14 +130,9 @@ def main():
                                        drop_last=True, num_workers=4)
     train_loader_followlane = DataLoader(train_dataset_lanefollow, batch_size=batch_size, shuffle=True,
                                          drop_last=True, num_workers=4)
+    loaders = [train_loader_left, train_loader_right, train_loader_straight, train_loader_followlane]
+    
 
-    loader_iter_left = iter(train_loader_left)
-    loader_iter_right = iter(train_loader_right)
-    loader_iter_straight = iter(train_loader_straight)
-    loader_iter_followlane = iter(train_loader_followlane)
-
-    iters = [loader_iter_left, loader_iter_right,
-             loader_iter_straight, loader_iter_followlane]
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     criterion = torch.nn.L1Loss()
     optimizer = optim.Adam(model.parameters(), lr=0.0002)
@@ -139,7 +142,7 @@ def main():
     early_stopper = 0
     for i in range(num_epochs):
         print("EPOCH ", i)
-        train_losses.append(train(model, iters, optimizer, criterion, batch_size))
+        train_losses.append(train(model, loaders, optimizer, criterion, batch_size))
         val_losses.append(validate(model, val_loader, criterion, 1))
         torch.save({
             'epoch': i,
