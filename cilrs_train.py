@@ -12,6 +12,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def validate(model, dataloader, criterion, batchsize):
     """Validate model performance on the validation dataset"""
     running_loss = 0
+    running_action_loss = 0
     model.eval()
     with torch.no_grad():
         for i, data in enumerate(dataloader):
@@ -31,9 +32,14 @@ def validate(model, dataloader, criterion, batchsize):
             target = target.to('cpu')
             loss = criterion(outputs, target)
             running_loss += loss.item()
+            action_loss = criterion(outputs[:3], target[:3])
+            running_action_loss += action_loss.itme()
         avg_loss = running_loss/((i+1) * batchsize)
+        avg_action_loss = running_action_loss/((i+1) * batchsize)
+        
         print("avg val loss ", avg_loss)
-        return avg_loss
+        print("avg val action loss ", avg_action_loss)
+        return avg_loss, avg_action_loss
 
 
 def train(model, loaders, optimizer, criterion, batchsize):
@@ -92,10 +98,11 @@ def train(model, loaders, optimizer, criterion, batchsize):
     return avg_loss
 
 
-def plot_losses(train_loss, val_loss):
+def plot_losses(train_loss, val_loss, avg_val_action_loss):
     """Visualize your plots and save them for your report."""
     plt.plot(train_loss, label='train_loss')
     plt.plot(val_loss, label='val_loss')
+    plt.plot(avg_val_action_loss, label='val_action_loss')
     plt.legend()
     plt.savefig("train_plot.png")
 
@@ -138,27 +145,30 @@ def main():
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
     train_losses = []
     val_losses = []
+    val_action_losses = []
     best_val_loss = 10000
     early_stopper = 0
     for i in range(num_epochs):
         print("EPOCH ", i)
         train_losses.append(train(model, loaders, optimizer, criterion, batch_size))
-        val_losses.append(validate(model, val_loader, criterion, 1))
+        avg_val_loss, avg_val_action_loss = validate(model, val_loader, criterion, 1)
+        val_losses.append(avg_val_loss)
+        val_action_losses.append(avg_val_action_loss)
         scheduler.step()
         torch.save({
             'epoch': i,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
         }, checkpoint)
-        if val_losses[-1] < best_val_loss:
+        if val_action_losses[-1] < best_val_loss:
             torch.save(model, save_path)
             early_stopper = 0
-            best_val_loss = val_losses[-1]
+            best_val_loss = val_action_losses[-1]
         else:
             early_stopper += 1
         if early_stopper >= 10:
             break
-    plot_losses(train_losses, val_losses)
+    plot_losses(train_losses, val_losses, avg_val_action_loss)
 
 
 if __name__ == "__main__":
