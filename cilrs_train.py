@@ -135,6 +135,7 @@ def main():
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     criterion = torch.nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.000005)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
     train_losses = []
     val_losses = []
     best_val_loss = 10000
@@ -143,6 +144,7 @@ def main():
         print("EPOCH ", i)
         train_losses.append(train(model, loaders, optimizer, criterion, batch_size))
         val_losses.append(validate(model, val_loader, criterion, 1))
+        scheduler.step()
         torch.save({
             'epoch': i,
             'model_state_dict': model.state_dict(),
