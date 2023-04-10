@@ -116,8 +116,10 @@ def plot_losses(train_loss, val_loss, lane_dist_losses, lane_angle_losses, tl_di
 
 def main():
     # Change these paths to the correct paths in your downloaded expert dataset
-    train_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\train\\"
-    val_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\val\\"
+    train_root = "/userfiles/ssafadoust20/expert_data/train"
+    val_root = "/userfiles/ssafadoust20/expert_data/val"
+    # train_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\train\\"
+    # val_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\val\\"
     model = AffordancePredictor().to(device)
     train_dataset_left = ExpertDataset(train_root, transform=True, command=0)
     train_dataset_right = ExpertDataset(train_root, transform=True, command=1)
@@ -152,13 +154,15 @@ def main():
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     criterion_MAE = torch.nn.L1Loss()
     criterion_CE = torch.nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0002)
+    optimizer = optim.Adam(model.parameters(), lr=0.00001)
     train_losses = []
     val_losses = []
     lane_dist_losses = []
     lane_angle_losses = []
     tl_dist_losses = []
     tl_state_losses = []
+    best_val_loss = 10000
+    early_stopper = 0
     for i in range(num_epochs):
         train_losses.append(train(model, iters, optimizer,
                             criterion_MAE, criterion_CE))
@@ -169,13 +173,19 @@ def main():
         lane_angle_losses.append(lane_angle_losses)
         tl_dist_losses.append(tl_dist_losses)
         tl_state_losses.append(tl_state_losses)
-        
         torch.save({
             'epoch': i,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
         }, checkpoint)
-    torch.save(model, save_path)
+        if val_losses[-1] < best_val_loss:
+            torch.save(model, save_path)
+            early_stopper = 0
+            best_val_loss = val_losses[-1]
+        else:
+            early_stopper += 1
+        if early_stopper >= 10:
+            break
     plot_losses(train_losses, val_losses, lane_dist_losses, lane_angle_losses, tl_dist_losses, tl_state_losses)
 
 
