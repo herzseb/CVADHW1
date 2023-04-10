@@ -12,6 +12,10 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def validate(model, dataloader, criterion_MAE, criterion_CE):
     """Validate model performance on the validation dataset"""
     running_loss = 0
+    lane_dist_losses = 0
+    lane_angle_losses = 0
+    tl_dist_losses = 0
+    tl_state_losses = 0
     model.eval()
     with torch.no_grad():
         for i, data in enumerate(dataloader):
@@ -31,10 +35,19 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
             outputs = model(
                 img=img, command=labels["command"])
             outputs = outputs.to('cpu')
-            loss = criterion_MAE(outputs[0], regression_target)
+            loss += criterion_MAE(outputs[0], regression_target)
             loss += criterion_CE(torch.argmax(outputs[1]), tl_state)
             running_loss += loss.item()
-        return running_loss/(i * img.size[0])
+            lane_dist_losses += criterion_MAE(outputs[0][:,0], regression_target[0])
+            lane_angle_losses += criterion_MAE(outputs[0][:,1], regression_target[1])
+            tl_dist_losses += criterion_MAE(outputs[0][:,2], regression_target[2])
+            tl_state_losses += criterion_CE(torch.argmax(outputs[1]), tl_state)
+        running_loss = running_loss/(i * img.size[0])
+        lane_dist_losses = lane_dist_losses/(i * img.size[0])
+        lane_angle_losses = lane_angle_losses/(i * img.size[0])
+        tl_dist_losses = tl_dist_losses/(i * img.size[0])
+        tl_state_losses = tl_state_losses/(i * img.size[0])
+        return running_loss, lane_dist_losses, lane_angle_losses, tl_dist_losses, tl_state_losses
 
 
 def train(model, iters, optimizer, criterion_MAE, criterion_CE):
@@ -88,12 +101,16 @@ def train(model, iters, optimizer, criterion_MAE, criterion_CE):
     return avg_loss
 
 
-def plot_losses(train_loss, val_loss):
+def plot_losses(train_loss, val_loss, lane_dist_losses, lane_angle_losses, tl_dist_losses, tl_state_losses):
     """Visualize your plots and save them for your report."""
     plt.plot(train_loss, label='train_loss')
     plt.plot(val_loss, label='val_loss')
+    plt.plot(lane_dist_losses, label='lane_dist_losses')
+    plt.plot(lane_angle_losses, label='lane_angle_losses')
+    plt.plot(tl_dist_losses, label='tl_dist_losses')
+    plt.plot(tl_state_losses, label='tl_state_losses')
     plt.legend()
-    plt.show
+    plt.savefig("affordance_plt")
     pass
 
 
@@ -138,18 +155,28 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=0.0002)
     train_losses = []
     val_losses = []
+    lane_dist_losses = []
+    lane_angle_losses = []
+    tl_dist_losses = []
+    tl_state_losses = []
     for i in range(num_epochs):
         train_losses.append(train(model, iters, optimizer,
                             criterion_MAE, criterion_CE))
-        val_losses.append(validate(model, val_loader,
-                          criterion_MAE, criterion_CE))
+        running_loss, lane_dist_losses, lane_angle_losses, tl_dist_losses, tl_state_losses = validate(model, val_loader,
+                          criterion_MAE, criterion_CE)
+        val_losses.append(running_loss)
+        lane_dist_losses.append(lane_dist_losses)
+        lane_angle_losses.append(lane_angle_losses)
+        tl_dist_losses.append(tl_dist_losses)
+        tl_state_losses.append(tl_state_losses)
+        
         torch.save({
             'epoch': i,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
         }, checkpoint)
     torch.save(model, save_path)
-    plot_losses(train_losses, val_losses)
+    plot_losses(train_losses, val_losses, lane_dist_losses, lane_angle_losses, tl_dist_losses, tl_state_losses)
 
 
 if __name__ == "__main__":
