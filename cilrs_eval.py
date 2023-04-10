@@ -1,35 +1,57 @@
 import os
 import torch
+from torchvision import transforms
 
 import yaml
 
 from carla_env.env import Env
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class Evaluator():
     def __init__(self, env, config):
         self.env = env
         self.config = config
         self.agent = self.load_agent()
+        self.preprocess = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
+                                 0.229, 0.224, 0.225]),
+        ])
 
     def load_agent(self):
         # Your code here
-        self.model = torch.load("cilrs_eval.py")
+        self.model = torch.load("cilrs_model.ckpt")
         self.model.eval()
 
     def generate_action(self, rgb, command, speed):
-        return self.model(rgb, command, speed)
+        rgb = self.preprocess(rgb)
+        rgb = rgb.to(device)
+        rgb = torch.unsqueeze(rgb, dim=0)
+        speed = torch.tensor(speed, dtype=torch.float32)
+        speed = speed.to(device)
+        speed = torch.unsqueeze(speed, dim=0)
+        speed = torch.unsqueeze(speed, dim=0)
+        out = self.model(rgb, [command], speed)
+        out = out.to('cpu')
+        out = torch.squeeze(out)
+        return out[0].item(), out[1].item(), out[2].item()
 
     def take_step(self, state):
         rgb = state["rgb"]
         command = state["command"]
         speed = state["speed"]
-        throttle, brake, steer, _ = self.generate_action(rgb, command, speed)
+        throttle, steer, brake = self.generate_action(rgb, command, speed)
+        brake = 0 if brake < 0 else brake
+        print("------------------")
         action = {
             "throttle": throttle,
             "brake": brake,
             "steer": steer
         }
+        print(action)
         state, reward_dict, is_terminal = self.env.step(action)
         return state, is_terminal
 
