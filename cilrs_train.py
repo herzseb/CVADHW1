@@ -33,7 +33,7 @@ def validate(model, dataloader, criterion, batchsize):
             loss = criterion(outputs, target)
             running_loss += loss.item()
             action_loss = criterion(outputs[:3], target[:3])
-            running_action_loss += action_loss.itme()
+            running_action_loss += action_loss.item()
         avg_loss = running_loss/((i+1) * batchsize)
         avg_action_loss = running_action_loss/((i+1) * batchsize)
         
