@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=CILRS            
+#SBATCH --job-name=Afford            
 #SBATCH --nodes=1        
 #SBATCH --mem=40GB
 #SBATCH --ntasks-per-node=4 
