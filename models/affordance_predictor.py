@@ -5,78 +5,140 @@ import torchvision.models as models
 
 class AffordancePredictor(nn.Module):
     """Afforance prediction network that takes images as input"""
+
     def __init__(self):
         super(AffordancePredictor, self).__init__()
         self.feature_extractor = models.vgg16(pretrained=True)
         self.feature_extractor.train()
-        self.percep_memory = []
+        self.percep_memory = torch.zeros(64, 9, 1000)
         self.queue_length = 10
-        self.lane_dist_left = nn.Sequential(
-            nn.Linear(1000, 512),
-            nn.ReLU(),
-            nn.Linear(512, 1),
-        )
-        self.lane_dist_right = nn.Sequential(
-            nn.Linear(1000, 512),
-            nn.ReLU(),
-            nn.Linear(512, 1),
-        )
-        self.lane_dist_straight = nn.Sequential(
-            nn.Linear(1000, 512),
-            nn.ReLU(),
-            nn.Linear(512, 1),
-        )
+        self.input_size = 1000
+        self.hidden_size = 512
+        self.num_layers = 3
+        self.drop_out = 0.2
+        self.in_channel = self.hidden_size
+        self.out_channels = 1
+        self.grus = nn.ModuleList()
+        for i in range(7):
+            self.grus.append(torch.nn.GRU(input_size=self.input_size, hidden_layers=self.hidden_size,
+                                          num_layers=self.num_layers, batch_first=True, dropout=self.drop_out))
 
-        self.angle_left = nn.Sequential(
-            nn.Linear(1000, 512),
-            nn.ReLU(),
-            nn.Linear(512, 1),
-        )
-        self.angle_right = nn.Sequential(
-            nn.Linear(1000, 512),
-            nn.ReLU(),
-            nn.Linear(512, 1),
-        )
-        self.angle_straight = nn.Sequential(
-            nn.Linear(1000, 512),
-            nn.ReLU(),
-            nn.Linear(512, 1),
-        )
+        # lane_dist_left_gru = torch.nn.GRU(input_size=self.input_size, hidden_layers=self.hidden_size,
+        #                                   num_layers=self.num_layers, batch_first=True, dropout=self.drop_out)
+        # lane_dist_right_gru = torch.nn.GRU(input_size=self.input_size, hidden_layers=self.hidden_size,
+        #                                    num_layers=self.num_layers, batch_first=True, dropout=self.drop_out)
+        # lane_dist_straight_gru = torch.nn.GRU(input_size=self.input_size, hidden_layers=self.hidden_size,
+        #                                       num_layers=self.num_layers, batch_first=True, dropout=self.drop_out)
+        # angle_left_gru = torch.nn.GRU(input_size=self.input_size, hidden_layers=self.hidden_size,
+        #                               num_layers=self.num_layers, batch_first=True, dropout=self.drop_out)
+        # angle_right_gru = torch.nn.GRU(input_size=self.input_size, hidden_layers=self.hidden_size,
+        #                                num_layers=self.num_layers, batch_first=True, dropout=self.drop_out)
+        # angle_straight_gru = torch.nn.GRU(input_size=self.input_size, hidden_layers=self.hidden_size,
+        #                                   num_layers=self.num_layers, batch_first=True, dropout=self.drop_out)
+        # tl_state_gru = torch.nn.GRU(input_size=self.input_size, hidden_layers=self.hidden_size,
+        #                             num_layers=self.num_layers, batch_first=True, dropout=self.drop_out)
+        self.batchnorm = torch.nn.BatchNorm1d(10)
+        self.blocks = nn.ModuleList()
+        for i in range(7):
+            self.blocks.append(nn.Sequential(
+                nn.BatchNorm1d(10),
+                nn.ReLU(),
+                nn.Dropout(self.drop_out),
+                torch.nn.Conv1d(in_channels=self.in_channel,
+                                out_channels=self.out_channels, kernel_size=3, padding="same"),
+                nn.BatchNorm1d(self.hidden_size),
+                nn.ReLU(),
+                nn.Dropout(self.drop_out),
+                nn.Linear(self.hidden_size, 1),
+            ))
+        # self.lane_dist_left = nn.Sequential(
+        #     nn.BatchNorm1d(10),
+        #     nn.ReLU(),
+        #     nn.Dropout(self.drop_out),
+        #     torch.nn.Conv1d(in_channels=self.in_channel,
+        #                     out_channels=self.out_channels, kernel_size=3, padding="same"),
+        #     nn.BatchNorm1d(self.hidden_size),
+        #     nn.ReLU(),
+        #     nn.Dropout(self.drop_out),
+        #     nn.Linear(self.hidden_size, 1),
+        # )
+        # self.lane_dist_right = nn.Sequential(
+        #     nn.BatchNorm1d(10),
+        #     nn.ReLU(),
+        #     nn.Dropout(self.drop_out),
+        #     nn.Linear(self.hidden_size, 1),
+        # )
+        # self.lane_dist_straight = nn.Sequential(
+        #     nn.BatchNorm1d(10),
+        #     nn.ReLU(),
+        #     nn.Dropout(self.drop_out),
+        #     nn.Linear(self.hidden_size, 1),
+        # )
 
-        self.traffic_light_distance = nn.GRU(10, 1000, 2)
+        # self.angle_left = nn.Sequential(
+        #     nn.BatchNorm1d(10),
+        #     nn.ReLU(),
+        #     nn.Dropout(self.drop_out),
+        #     nn.Linear(self.hidden_size, 1),
+        # )
+        # self.angle_right = nn.Sequential(
+        #     nn.BatchNorm1d(10),
+        #     nn.ReLU(),
+        #     nn.Dropout(self.drop_out),
+        #     nn.Linear(self.hidden_size, 1),
+        # )
+        # self.angle_straight = nn.Sequential(
+        #     nn.BatchNorm1d(10),
+        #     nn.ReLU(),
+        #     nn.Dropout(self.drop_out),
+        #     nn.Linear(self.hidden_size, 1),
+        # )
+
+        # self.traffic_light_distance = nn.Sequential(
+        #     nn.BatchNorm1d(10),
+        #     nn.ReLU(),
+        #     nn.Dropout(self.drop_out),
+        #     nn.Linear(self.hidden_size, 1),
+        # )
 
         self.traffic_light_state = nn.Sequential(
             nn.Linear(1000, 512),
+            nn.BatchNorm1d(10),
             nn.ReLU(),
-            nn.Linear(512, 3)
+            nn.Dropout(self.drop_out),
+            nn.Linear(512, 3),
         )
 
     def forward(self, img, command):
         features = self.feature_extractor(img)
-        self.percep_memory.append(torch.unsqueeze(features,dim=0))
-        features_lane_dist = torch.concat(tuple(self.percep_memory[-self.queue_length:]), dim=1)  # Check
-        features_angle = torch.concat(tuple(self.percep_memory[-self.queue_length:]), dim=1)  # Check
-        features_traffic_light_distance = torch.concat(tuple(self.percep_memory[-self.queue_length:]), dim=0)  # Check
-        features_traffic_light_state = torch.concat(tuple(self.percep_memory[-self.queue_length:]), dim=1)  # Check
+        features = torch.unsqueeze(features, dim=1)
+        self.percep_memory = torch.concat(
+            (features, self.percep_memory), dim=1)
 
         if command[0] == 0:
-            affordance_lane_dist = self.lane_dist_left(features_lane_dist)
+            affordance_lane_dist = self.blocks[0](
+                self.grus[0](self.percep_memory)[0])
         elif command[0] == 1:
-            affordance_lane_dist = self.lane_dist_right(features_lane_dist)
+            affordance_lane_dist = self.blocks[1](
+                self.grus[1](self.percep_memory)[0])
         elif command[0] == 2 or command[0] == 3:
-            affordance_lane_dist = self.lane_dist_straight(features_lane_dist)
+            affordance_lane_dist = self.blocks[2](
+                self.grus[2](self.percep_memory)[0])
 
         if command[0] == 0:
-            affordance_angle = self.angle_left(features_angle)
+            affordance_angle = self.blocks[3](
+                self.grus[3](self.percep_memory)[0])
         elif command[0] == 1:
-            affordance_angle = self.angle_right(features_angle)
+            affordance_angle = self.blocks[4](
+                self.grus[4](self.percep_memory)[0])
         elif command[0] == 2 or command[0] == 3:
-            affordance_angle = self.angle_straight(features_angle)
+            affordance_angle = self.blocks[5](
+                self.grus[5](self.percep_memory)[0])
 
-        affordance_traffic_light_distance = self.traffic_light_distance(
-            features_traffic_light_distance)
+        affordance_traffic_light_distance = self.blocks[6](
+            self.grus[6](self.percep_memory)[0])
 
         affordance_traffic_light_state = self.traffic_light_state(
-            features_traffic_light_state)
-        self.percep_memory.pop(0)
+            self.percep_memory[:, 0, :])
+        self.percep_memory = self.percep_memory[:, :10, :]
         return [torch.concat((affordance_lane_dist, affordance_angle, affordance_traffic_light_distance), dim=1), affordance_traffic_light_state]
