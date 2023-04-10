@@ -130,10 +130,10 @@ def main():
     val_dataset = ExpertDataset(val_root, transform=True)
 
     # You can change these hyper parameters freely, and you can add more
-    num_epochs = 10
-    batch_size = 2
-    save_path = "cilrs_model.ckpt"
-    checkpoint = "afforance_checkpoint.pt"
+    num_epochs = 50
+    batch_size = 64
+    save_path = "affordance_model.ckpt"
+    checkpoint = "affordance_checkpoint.pt"
 
     train_loader_left = DataLoader(train_dataset_left, batch_size=batch_size, shuffle=True,
                                    drop_last=True)
