@@ -1,4 +1,5 @@
 import os
+import torch
 
 import yaml
 
@@ -11,19 +12,19 @@ class Evaluator():
         self.config = config
         self.agent = self.load_agent()
 
-    def load_agent():
+    def load_agent(self):
         # Your code here
-        pass
+        self.model = torch.load("cilrs_eval.py")
+        self.model.eval()
 
-    def generate_action(rgb, command, speed):
-        # Your code here
-        pass
+    def generate_action(self, rgb, command, speed):
+        return self.model(rgb, command, speed)
 
     def take_step(self, state):
         rgb = state["rgb"]
         command = state["command"]
         speed = state["speed"]
-        throttle, steer, brake = self.generate_action(rgb, command, speed)
+        throttle, brake, steer, _ = self.generate_action(rgb, command, speed)
         action = {
             "throttle": throttle,
             "brake": brake,
