@@ -32,7 +32,7 @@ def validate(model, dataloader, criterion, batchsize):
             target = target.to('cpu')
             loss = criterion(outputs, target)
             running_loss += loss.item()
-            action_loss = criterion(outputs[:3], target[:3])
+            action_loss = criterion(outputs[...,:3], target[...,:3])
             running_action_loss += action_loss.item()
         avg_loss = running_loss/((i+1) * batchsize)
         avg_action_loss = running_action_loss/((i+1) * batchsize)
@@ -141,7 +141,7 @@ def main():
 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     criterion = torch.nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.000005) #5
+    optimizer = optim.Adam(model.parameters(), lr=0.00005) #5
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
     train_losses = []
     val_losses = []
