@@ -32,6 +32,7 @@ def validate(model, dataloader, criterion, batchsize):
             target = target.to('cpu')
             loss = criterion(outputs, target)
             running_loss += loss.item()
+            # get loss only for commands
             action_loss = criterion(outputs[...,:3], target[...,:3])
             running_action_loss += action_loss.item()
         avg_loss = running_loss/((i+1) * batchsize)
@@ -47,7 +48,9 @@ def train(model, loaders, optimizer, criterion, batchsize):
     model.train()
     running_loss = 0.0
     it = 0
+    # flags to catch end of each iterator
     left_fin, right_fin, straight_fin, followlane_fin = False, False, False, False
+    # init each data loader new after one epoch
     loader_iter_left = iter(loaders[0])
     loader_iter_right = iter(loaders[1])
     loader_iter_straight = iter(loaders[2])
@@ -57,7 +60,9 @@ def train(model, loaders, optimizer, criterion, batchsize):
              loader_iter_straight, loader_iter_followlane]
     while True:
         try:
+            # randomly select one command
             curr_iter = random.choices(iters, weights=(1, 1, 1, 30))[0]
+            # get next batch of the selected command
             img, labels = next(curr_iter)
             throttle = torch.unsqueeze(
                 labels["throttle"], 1).to(dtype=torch.float32)
@@ -82,6 +87,7 @@ def train(model, loaders, optimizer, criterion, batchsize):
             it += 1
 
         except StopIteration:
+            # epoch ends after all iterators are at the end of their list
             if curr_iter == iters[0]:
                 left_fin = True
             elif curr_iter == iters[1]:

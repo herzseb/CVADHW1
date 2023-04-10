@@ -14,6 +14,7 @@ class ExpertDataset(Dataset):
         self.data_root = data_root
         self.measurements_path = os.path.join(self.data_root, "measurements")
         self.rgb_path = os.path.join(self.data_root, "rgb")
+        # dataset is devided such that one batch only has the same command
         if command == None:
             self.json_files = os.listdir(self.measurements_path)
             self.json_files.sort()
@@ -34,6 +35,7 @@ class ExpertDataset(Dataset):
         self.img_names.sort()
         self.convert_tensor = transforms.ToTensor()
         self.transform = transform
+        # pretrained resnet has a defined image preprocessing
         self.preprocess = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),

@@ -22,11 +22,12 @@ class Evaluator():
         ])
 
     def load_agent(self):
-        # Your code here
         self.model = torch.load("cilrs_model.ckpt")
         self.model.eval()
 
     def generate_action(self, rgb, command, speed):
+        # preprocess images to fit pretrained resnet 
+        # batch image and speed 
         rgb = self.preprocess(rgb)
         rgb = rgb.to(device)
         rgb = torch.unsqueeze(rgb, dim=0)
