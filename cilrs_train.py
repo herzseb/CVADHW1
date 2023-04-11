@@ -9,7 +9,7 @@ from models.cilrs import CILRS
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def weighted_mse_loss(input, target, weight):
-    return torch.mean(weight * (input - target))
+    return torch.mean(weight * torch.abs(input - target))
 
 def validate(model, dataloader, criterion, batchsize):
     """Validate model performance on the validation dataset"""
@@ -150,7 +150,7 @@ def main():
 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     criterion = torch.nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.00001) #5
+    optimizer = optim.Adam(model.parameters(), lr=0.000005) #5
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
     train_losses = []
     val_losses = []
