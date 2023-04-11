@@ -56,7 +56,6 @@ def train(model, iters, optimizer, criterion_MAE, criterion_CE):
     running_loss = 0.0
     iter = 0
     left_fin, right_fin, straight_fin, followlane_fin = False, False, False, False
-    softmax = torch.nn.Softmax()
     while True:
         try:
             curr_iter = random.choices(iters, weights=(1, 1, 1, 30))[0]
@@ -80,7 +79,7 @@ def train(model, iters, optimizer, criterion_MAE, criterion_CE):
             clas = outputs[1].to('cpu')
             loss = criterion_MAE(regs, regression_target)
             loss += criterion_CE(clas, torch.flatten(tl_state).to(dtype=torch.long))
-            loss.backward()
+            loss.backward(retain_graph=True)
             optimizer.step()
             print(iter, " ", loss.item())
             running_loss += loss.item()
