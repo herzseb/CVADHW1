@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch
 import torchvision.models as models
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class AffordancePredictor(nn.Module):
@@ -11,6 +12,7 @@ class AffordancePredictor(nn.Module):
         self.feature_extractor = models.vgg16(pretrained=True)
         self.feature_extractor.train()
         self.percep_memory = torch.zeros(64, 9, 1000)
+        self.percep_memory = self.percep_memory.to(device)
         self.queue_length = 10
         self.input_size = 1000
         self.hidden_size = 512
