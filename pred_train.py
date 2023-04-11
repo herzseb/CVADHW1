@@ -133,7 +133,7 @@ def main():
 
     # You can change these hyper parameters freely, and you can add more
     num_epochs = 50
-    batch_size = 2
+    batch_size = 64
     save_path = "affordance_model.ckpt"
     checkpoint = "affordance_checkpoint.pt"
 

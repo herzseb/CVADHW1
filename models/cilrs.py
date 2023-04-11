@@ -26,7 +26,7 @@ class CILRS(nn.Module):
           nn.Linear(self.hidden,1),
         )
         self.after_concat = nn.Sequential(
-          nn.BatchNorm1d(self.hidden),
+          nn.BatchNorm1d(1128),
           nn.ReLU(),
           nn.Dropout(p=self.dropout),
           nn.Linear(1128,1128),
