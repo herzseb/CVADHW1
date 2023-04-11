@@ -36,13 +36,13 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
                 img=img, command=labels["command"])
             regs = outputs[0].to('cpu')
             clas = outputs[1].to('cpu')
-            loss += criterion_MAE(regs, regression_target)
-            loss += criterion_CE(torch.argmax(clas), tl_state)
+            loss = criterion_MAE(regs, regression_target)
+            loss += criterion_CE(clas, torch.flatten(tl_state).to(dtype=torch.long))
             running_loss += loss.item()
             lane_dist_losses += criterion_MAE(regs[:,0], regression_target[0])
             lane_angle_losses += criterion_MAE(regs[:,1], regression_target[1])
             tl_dist_losses += criterion_MAE(regs[:,2], regression_target[2])
-            tl_state_losses += criterion_CE(torch.argmax(clas), tl_state)
+            tl_state_losses += criterion_CE(clas, tl_state)
         running_loss = running_loss/(i * img.size[0])
         lane_dist_losses = lane_dist_losses/(i * img.size[0])
         lane_angle_losses = lane_angle_losses/(i * img.size[0])
@@ -79,7 +79,7 @@ def train(model, iters, optimizer, criterion_MAE, criterion_CE):
             regs = outputs[0].to('cpu')
             clas = outputs[1].to('cpu')
             loss = criterion_MAE(regs, regression_target)
-            loss += criterion_CE(softmax(clas), tl_state)
+            loss += criterion_CE(clas, torch.flatten(tl_state).to(dtype=torch.long))
             loss.backward()
             optimizer.step()
             print(iter, " ", loss.item())
@@ -118,10 +118,10 @@ def plot_losses(train_loss, val_loss, lane_dist_losses, lane_angle_losses, tl_di
 
 def main():
     # Change these paths to the correct paths in your downloaded expert dataset
-    train_root = "/userfiles/ssafadoust20/expert_data/train"
-    val_root = "/userfiles/ssafadoust20/expert_data/val"
-    # train_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\train\\"
-    # val_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\val\\"
+    # train_root = "/userfiles/ssafadoust20/expert_data/train"
+    # val_root = "/userfiles/ssafadoust20/expert_data/val"
+    train_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\train\\"
+    val_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\val\\"
     model = AffordancePredictor().to(device)
     train_dataset_left = ExpertDataset(train_root, transform=True, command=0)
     train_dataset_right = ExpertDataset(train_root, transform=True, command=1)
@@ -133,7 +133,7 @@ def main():
 
     # You can change these hyper parameters freely, and you can add more
     num_epochs = 50
-    batch_size = 64
+    batch_size = 2
     save_path = "affordance_model.ckpt"
     checkpoint = "affordance_checkpoint.pt"
 

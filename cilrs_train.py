@@ -174,7 +174,7 @@ def main():
             early_stopper += 1
         if early_stopper >= 10:
             break
-    plot_losses(train_losses, val_losses, avg_val_action_loss)
+    plot_losses(train_losses, val_losses, val_action_losses)
 
 
 if __name__ == "__main__":
