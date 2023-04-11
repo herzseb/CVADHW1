@@ -8,6 +8,8 @@ from expert_dataset import ExpertDataset
 from models.cilrs import CILRS
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+def weighted_mse_loss(input, target, weight):
+    return torch.sum(weight * (input - target))
 
 def validate(model, dataloader, criterion, batchsize):
     """Validate model performance on the validation dataset"""
