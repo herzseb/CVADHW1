@@ -17,6 +17,8 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
     tl_dist_losses = 0
     tl_state_losses = 0
     model.eval()
+    memory = torch.zeros(64, 9, 1000)
+    memory = memory.to(device)
     with torch.no_grad():
         for i, data in enumerate(dataloader):
             img, labels = data
@@ -32,8 +34,9 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
                 (lane_dist, lane_angle, tl_dist), dim=1)
 
             img = img.to(device)
-            outputs = model(
-                img=img, command=labels["command"])
+            outputs, hidden_memory = model(
+                img=img, command=labels["command"], memory=memory)
+            memory = hidden_memory
             regs = outputs[0].to('cpu')
             clas = outputs[1].to('cpu')
             loss = criterion_MAE(regs, regression_target)
@@ -56,6 +59,8 @@ def train(model, iters, optimizer, criterion_MAE, criterion_CE):
     running_loss = 0.0
     iter = 0
     left_fin, right_fin, straight_fin, followlane_fin = False, False, False, False
+    memory = torch.zeros(64, 9, 1000)
+    memory = memory.to(device)
     while True:
         try:
             curr_iter = random.choices(iters, weights=(1, 1, 1, 30))[0]
@@ -73,8 +78,9 @@ def train(model, iters, optimizer, criterion_MAE, criterion_CE):
             optimizer.zero_grad()
 
             img = img.to(device)
-            outputs = model(
-                img=img, command=labels["command"])
+            outputs, hidden_memory = model(
+                img=img, command=labels["command"], memory=memory)
+            memory = hidden_memory
             regs = outputs[0].to('cpu')
             clas = outputs[1].to('cpu')
             loss = criterion_MAE(regs, regression_target)
