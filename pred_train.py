@@ -85,7 +85,7 @@ def train(model, iters, optimizer, criterion_MAE, criterion_CE):
             clas = outputs[1].to('cpu')
             loss = criterion_MAE(regs, regression_target)
             loss += criterion_CE(clas, torch.flatten(tl_state).to(dtype=torch.long))
-            loss.backward(retain_graph=True)
+            loss.backward()
             optimizer.step()
             print(iter, " ", loss.item())
             running_loss += loss.item()
