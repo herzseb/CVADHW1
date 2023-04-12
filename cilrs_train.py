@@ -32,7 +32,7 @@ def validate(model, dataloader, criterion, batchsize):
                 img=img, command=labels["command"], measured_speed=speed)
             outputs = outputs.to('cpu')
             target = target.to('cpu')
-            loss = criterion(outputs, target)
+            loss = weighted_mse_loss(outputs, target, torch.tensor([1.,10.,2.,0.5]))
             running_loss += loss.item()
             # get loss only for commands
             #action_loss = criterion(outputs[...,:3], target[...,:3])
