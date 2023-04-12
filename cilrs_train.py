@@ -84,7 +84,7 @@ def train(model, loaders, optimizer, criterion, batchsize):
             outputs = outputs.to('cpu')
             target = target.to('cpu')
             #loss = criterion(outputs, target)
-            weighted_mse_loss(outputs, target, torch.tensor([1.,5.,2.,0.5]))
+            loss = weighted_mse_loss(outputs, target, torch.tensor([1.,5.,2.,0.5]))
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
