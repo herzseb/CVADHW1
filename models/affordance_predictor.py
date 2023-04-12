@@ -111,11 +111,11 @@ class AffordancePredictor(nn.Module):
             nn.Linear(512, 3),
         )
 
-    def forward(self, img, command):
+    def forward(self, img, command, memory):
         features = self.feature_extractor(img)
         features = torch.unsqueeze(features, dim=1)
         self.percep_memory = torch.concat(
-            (features, self.percep_memory), dim=1)
+            (features, memory), dim=1)
         self.percep_memory = self.batchnorm(self.percep_memory)
         self.percep_memory = torch.relu(self.percep_memory)
         self.percep_memory = self.do(self.percep_memory)

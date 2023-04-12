@@ -36,7 +36,7 @@ def validate(model, dataloader, criterion, batchsize):
             running_loss += loss.item()
             # get loss only for commands
             #action_loss = criterion(outputs[...,:3], target[...,:3])
-            action_loss = weighted_mse_loss(outputs[...,:3], target[...,:3], torch.tensor([1.,10.,2.]))
+            action_loss = weighted_mse_loss(outputs[...,:3], target[...,:3], torch.tensor([1.,5.,2.]))
             running_action_loss += action_loss.item()
         avg_loss = running_loss/((i+1) * batchsize)
         avg_action_loss = running_action_loss/((i+1) * batchsize)
@@ -83,7 +83,8 @@ def train(model, loaders, optimizer, criterion, batchsize):
                 img=img, command=labels["command"], measured_speed=speed)
             outputs = outputs.to('cpu')
             target = target.to('cpu')
-            loss = criterion(outputs, target)
+            #loss = criterion(outputs, target)
+            weighted_mse_loss(outputs, target, torch.tensor([1.,5.,2.,0.5]))
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
