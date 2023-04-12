@@ -144,5 +144,5 @@ class AffordancePredictor(nn.Module):
 
         affordance_traffic_light_state = self.traffic_light_state(
             self.percep_memory[:, 0, :])
-        memory = self.percep_memory[:, :9, :]
+        
         return [torch.squeeze(torch.concat((affordance_lane_dist, affordance_angle, affordance_traffic_light_distance), dim=1),dim=2), affordance_traffic_light_state], memory

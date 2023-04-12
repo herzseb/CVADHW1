@@ -36,7 +36,7 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
             img = img.to(device)
             outputs, hidden_memory = model(
                 img=img, command=labels["command"], memory=memory)
-            memory = hidden_memory
+            memory = hidden_memory[:, :9, :]
             regs = outputs[0].to('cpu')
             clas = outputs[1].to('cpu')
             loss = criterion_MAE(regs, regression_target)
@@ -80,7 +80,7 @@ def train(model, iters, optimizer, criterion_MAE, criterion_CE):
             img = img.to(device)
             outputs, hidden_memory = model(
                 img=img, command=labels["command"], memory=memory)
-            memory = hidden_memory
+            memory = hidden_memory[:, :9, :]
             regs = outputs[0].to('cpu')
             clas = outputs[1].to('cpu')
             loss = criterion_MAE(regs, regression_target)
