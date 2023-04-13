@@ -9,7 +9,7 @@ from models.cilrs import CILRS
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def weighted_mse_loss(input, target, weight):
-    return torch.mean(weight * torch.abs(input - target))
+    return torch.mean(weight * torch.abs(input - target)**2)
 
 def validate(model, dataloader, criterion, batchsize):
     """Validate model performance on the validation dataset"""
@@ -36,7 +36,7 @@ def validate(model, dataloader, criterion, batchsize):
             running_loss += loss.item()
             # get loss only for commands
             #action_loss = criterion(outputs[...,:3], target[...,:3])
-            action_loss = weighted_mse_loss(outputs[...,:3], target[...,:3], torch.tensor([1.,5.,2.]))
+            action_loss = weighted_mse_loss(outputs[...,:3], target[...,:3], torch.tensor([1.,2.,5.]))
             running_action_loss += action_loss.item()
         avg_loss = running_loss/(i+1)
         avg_action_loss = running_action_loss/(i+1)
