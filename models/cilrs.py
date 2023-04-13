@@ -9,7 +9,7 @@ class CILRS(nn.Module):
         self.resnet = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=True)
         self.resnet.eval()
         self.dropout = 0.0 #0.2
-        self.hidden = 512
+        self.hidden = 128
         self.speed_encoding = nn.Sequential(
           nn.Linear(1,64),
           #nn.BatchNorm1d(64),
