@@ -39,9 +39,9 @@ class CILRS(nn.Module):
           nn.Dropout(p=self.dropout),
         )
         self.action_straight = nn.Sequential(
-          nn.Linear(512,512),
-          #nn.BatchNorm1d(512),
-          nn.ReLU(),
+          # nn.Linear(512,512),
+          # #nn.BatchNorm1d(512),
+          # nn.ReLU(),
           nn.Linear(512,self.hidden),
           #nn.BatchNorm1d(self.hidden),
           nn.ReLU(),
@@ -49,9 +49,9 @@ class CILRS(nn.Module):
           nn.Linear(self.hidden,3)
         )
         self.action_left = nn.Sequential(
-          nn.Linear(512,512),
-          #nn.BatchNorm1d(512),
-          nn.ReLU(),
+          # nn.Linear(512,512),
+          # #nn.BatchNorm1d(512),
+          # nn.ReLU(),
           nn.Linear(512,self.hidden),
           #nn.BatchNorm1d(self.hidden),
           nn.ReLU(),
@@ -59,9 +59,9 @@ class CILRS(nn.Module):
           nn.Linear(self.hidden,3)
         )
         self.action_right = nn.Sequential(
-          nn.Linear(512,512),
-          #nn.BatchNorm1d(512),
-          nn.ReLU(),
+          # nn.Linear(512,512),
+          # #nn.BatchNorm1d(512),
+          # nn.ReLU(),
           nn.Linear(512,self.hidden),
           #nn.BatchNorm1d(self.hidden),
           nn.ReLU(),
@@ -69,9 +69,9 @@ class CILRS(nn.Module):
           nn.Linear(self.hidden,3)
         )
         self.action_follow = nn.Sequential(
-          nn.Linear(521,512),
-          #nn.BatchNorm1d(512),
-          nn.ReLU(),
+          # nn.Linear(521,512),
+          # #nn.BatchNorm1d(512),
+          # nn.ReLU(),
           nn.Linear(512,self.hidden),
           #nn.BatchNorm1d(self.hidden),
           nn.ReLU(),

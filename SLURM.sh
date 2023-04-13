@@ -8,7 +8,7 @@
 #SBATCH --account=users    
 #SBATCH --gres=gpu:tesla_t4:1
 #SBATCH --time=7:0:0        
-#SBATCH --output=/bignet/test-%j.out    
+#SBATCH --output=/smallernet/test-%j.out    
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=sherz22@ku.edu.tr    
 module load python/3.9.5
