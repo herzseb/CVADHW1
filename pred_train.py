@@ -47,7 +47,8 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
             lane_angle_losses += criterion_MAE(
                 regs[:, 1], regression_target[:, 1])
             tl_dist_losses += criterion_MAE(regs[:, 2], regression_target[:, 2])
-            tl_state_losses += criterion_CE(clas, tl_state)
+            tl_state_losses += criterion_CE(clas,
+                                 torch.flatten(tl_state).to(dtype=torch.long))
         running_loss = running_loss/(i * img.size()[0])
         lane_dist_losses = lane_dist_losses/(i * img.size()[0])
         lane_angle_losses = lane_angle_losses/(i * img.size()[0])
