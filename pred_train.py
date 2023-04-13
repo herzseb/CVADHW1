@@ -40,17 +40,19 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
             regs = outputs[0].to('cpu')
             clas = outputs[1].to('cpu')
             loss = criterion_MAE(regs, regression_target)
-            loss += criterion_CE(clas, torch.flatten(tl_state).to(dtype=torch.long))
+            loss += criterion_CE(clas,
+                                 torch.flatten(tl_state).to(dtype=torch.long))
             running_loss += loss.item()
-            lane_dist_losses += criterion_MAE(regs[:,0], regression_target[0])
-            lane_angle_losses += criterion_MAE(regs[:,1], regression_target[1])
-            tl_dist_losses += criterion_MAE(regs[:,2], regression_target[2])
+            lane_dist_losses += criterion_MAE(regs[:, 0], regression_target[0])
+            lane_angle_losses += criterion_MAE(
+                regs[:, 1], regression_target[1])
+            tl_dist_losses += criterion_MAE(regs[:, 2], regression_target[2])
             tl_state_losses += criterion_CE(clas, tl_state)
-        running_loss = running_loss/(i * img.size[0])
-        lane_dist_losses = lane_dist_losses/(i * img.size[0])
-        lane_angle_losses = lane_angle_losses/(i * img.size[0])
-        tl_dist_losses = tl_dist_losses/(i * img.size[0])
-        tl_state_losses = tl_state_losses/(i * img.size[0])
+        running_loss = running_loss/(i * img.size()[0])
+        lane_dist_losses = lane_dist_losses/(i * img.size()[0])
+        lane_angle_losses = lane_angle_losses/(i * img.size()[0])
+        tl_dist_losses = tl_dist_losses/(i * img.size()[0])
+        tl_state_losses = tl_state_losses/(i * img.size()[0])
         return running_loss, lane_dist_losses, lane_angle_losses, tl_dist_losses, tl_state_losses
 
 
@@ -84,10 +86,10 @@ def train(model, iters, optimizer, criterion_MAE, criterion_CE):
             regs = outputs[0].to('cpu')
             clas = outputs[1].to('cpu')
             loss = criterion_MAE(regs, regression_target)
-            loss += criterion_CE(clas, torch.flatten(tl_state).to(dtype=torch.long))
+            loss += criterion_CE(clas,
+                                 torch.flatten(tl_state).to(dtype=torch.long))
             loss.backward(retain_graph=True)
             optimizer.step()
-            print(iter, " ", loss.item())
             running_loss += loss.item()
             iter = iter + 1
 
@@ -103,7 +105,7 @@ def train(model, iters, optimizer, criterion_MAE, criterion_CE):
             if left_fin and right_fin and straight_fin and followlane_fin:
                 break
 
-    avg_loss = running_loss/(iter * img.size[0])
+    avg_loss = running_loss/(iter * img.size()[0])
     print(avg_loss)
     return avg_loss
 
@@ -174,7 +176,7 @@ def main():
         train_losses.append(train(model, iters, optimizer,
                             criterion_MAE, criterion_CE))
         running_loss, lane_dist_losses, lane_angle_losses, tl_dist_losses, tl_state_losses = validate(model, val_loader,
-                          criterion_MAE, criterion_CE)
+                                                                                                      criterion_MAE, criterion_CE)
         val_losses.append(running_loss)
         lane_dist_losses.append(lane_dist_losses)
         lane_angle_losses.append(lane_angle_losses)
@@ -193,7 +195,8 @@ def main():
             early_stopper += 1
         if early_stopper >= 10:
             break
-    plot_losses(train_losses, val_losses, lane_dist_losses, lane_angle_losses, tl_dist_losses, tl_state_losses)
+    plot_losses(train_losses, val_losses, lane_dist_losses,
+                lane_angle_losses, tl_dist_losses, tl_state_losses)
 
 
 if __name__ == "__main__":
