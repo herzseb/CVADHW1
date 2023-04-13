@@ -43,10 +43,10 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
             loss += criterion_CE(clas,
                                  torch.flatten(tl_state).to(dtype=torch.long))
             running_loss += loss.item()
-            lane_dist_losses += criterion_MAE(regs[:, 0], regression_target[0])
+            lane_dist_losses += criterion_MAE(regs[:, 0], regression_target[:, 0])# ERROR HERE
             lane_angle_losses += criterion_MAE(
-                regs[:, 1], regression_target[1])
-            tl_dist_losses += criterion_MAE(regs[:, 2], regression_target[2])
+                regs[:, 1], regression_target[:, 1])
+            tl_dist_losses += criterion_MAE(regs[:, 2], regression_target[:, 2])
             tl_state_losses += criterion_CE(clas, tl_state)
         running_loss = running_loss/(i * img.size()[0])
         lane_dist_losses = lane_dist_losses/(i * img.size()[0])
@@ -56,13 +56,20 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
         return running_loss, lane_dist_losses, lane_angle_losses, tl_dist_losses, tl_state_losses
 
 
-def train(model, iters, optimizer, criterion_MAE, criterion_CE):
+def train(model, loaders, optimizer, criterion_MAE, criterion_CE):
     """Train model on the training dataset for one epoch"""
     running_loss = 0.0
-    iter = 0
+    it = 0
     left_fin, right_fin, straight_fin, followlane_fin = False, False, False, False
     memory = torch.zeros(64, 9, 1000)
     memory = memory.to(device)
+    loader_iter_left = iter(loaders[0])
+    loader_iter_right = iter(loaders[1])
+    loader_iter_straight = iter(loaders[2])
+    loader_iter_followlane = iter(loaders[3])
+
+    iters = [loader_iter_left, loader_iter_right,
+             loader_iter_straight, loader_iter_followlane]
     while True:
         try:
             curr_iter = random.choices(iters, weights=(1, 1, 1, 30))[0]
@@ -91,7 +98,7 @@ def train(model, iters, optimizer, criterion_MAE, criterion_CE):
             loss.backward(retain_graph=True)
             optimizer.step()
             running_loss += loss.item()
-            iter = iter + 1
+            it = it + 1
 
         except StopIteration:
             if curr_iter == iters[0]:
@@ -105,7 +112,7 @@ def train(model, iters, optimizer, criterion_MAE, criterion_CE):
             if left_fin and right_fin and straight_fin and followlane_fin:
                 break
 
-    avg_loss = running_loss/(iter * img.size()[0])
+    avg_loss = running_loss/(it * img.size()[0])
     print(avg_loss)
     return avg_loss
 
@@ -144,22 +151,16 @@ def main():
     save_path = "affordance_model.ckpt"
     checkpoint = "affordance_checkpoint.pt"
 
-    train_loader_left = DataLoader(train_dataset_left, batch_size=batch_size, shuffle=True,
+    train_loader_left = DataLoader(train_dataset_left, batch_size=batch_size, shuffle=False,
                                    drop_last=True)
-    train_loader_right = DataLoader(train_dataset_right, batch_size=batch_size, shuffle=True,
+    train_loader_right = DataLoader(train_dataset_right, batch_size=batch_size, shuffle=False,
                                     drop_last=True)
-    train_loader_straight = DataLoader(train_dataset_staright, batch_size=batch_size, shuffle=True,
+    train_loader_straight = DataLoader(train_dataset_staright, batch_size=batch_size, shuffle=False,
                                        drop_last=True)
-    train_loader_followlane = DataLoader(train_dataset_lanefollow, batch_size=batch_size, shuffle=True,
+    train_loader_followlane = DataLoader(train_dataset_lanefollow, batch_size=batch_size, shuffle=False,
                                          drop_last=True)
-
-    loader_iter_left = iter(train_loader_left)
-    loader_iter_right = iter(train_loader_right)
-    loader_iter_straight = iter(train_loader_straight)
-    loader_iter_followlane = iter(train_loader_followlane)
-
-    iters = [loader_iter_left, loader_iter_right,
-             loader_iter_straight, loader_iter_followlane]
+    
+    loaders = [train_loader_left, train_loader_right, train_loader_straight, train_loader_followlane]
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     criterion_MAE = torch.nn.L1Loss()
     criterion_CE = torch.nn.CrossEntropyLoss()
@@ -173,7 +174,7 @@ def main():
     best_val_loss = 10000
     early_stopper = 0
     for i in range(num_epochs):
-        train_losses.append(train(model, iters, optimizer,
+        train_losses.append(train(model, loaders, optimizer,
                             criterion_MAE, criterion_CE))
         running_loss, lane_dist_losses, lane_angle_losses, tl_dist_losses, tl_state_losses = validate(model, val_loader,
                                                                                                       criterion_MAE, criterion_CE)

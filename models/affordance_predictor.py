@@ -10,9 +10,9 @@ class AffordancePredictor(nn.Module):
     def __init__(self):
         super(AffordancePredictor, self).__init__()
         self.feature_extractor = models.vgg16(pretrained=True)
-        self.feature_extractor.train()
-        self.percep_memory = torch.zeros(64, 9, 1000)
-        self.percep_memory = self.percep_memory.to(device)
+        self.feature_extractor.eval()
+        # self.percep_memory = torch.zeros(64, 9, 1000)
+        # self.percep_memory = self.percep_memory.to(device)
         self.queue_length = 10
         self.input_size = 1000
         self.hidden_size = 512
