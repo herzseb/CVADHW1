@@ -82,8 +82,8 @@ class CILRS(nn.Module):
 
     def forward(self, img, command, measured_speed):
         img_enc = self.resnet(img)
-        speed_enc = self.speed_encoding(measured_speed)
-        embedding = self.after_concat(torch.cat((img_enc, speed_enc), dim=1))
+        #speed_enc = self.speed_encoding(measured_speed)
+        embedding = self.after_concat(torch.cat((img_enc, measured_speed), dim=1))
         if command[0] == 0: #LEFT
             return torch.concat((self.action_left(embedding), self.speed_prediction(embedding)), dim=1)
         elif command[0] == 1: #RIGHT
