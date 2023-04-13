@@ -43,7 +43,7 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
             loss += criterion_CE(clas,
                                  torch.flatten(tl_state).to(dtype=torch.long))
             running_loss += loss.item()
-            lane_dist_losses += criterion_MAE(regs[:, 0], regression_target[:, 0])# ERROR HERE
+            lane_dist_losses += criterion_MAE(regs[:, 0], regression_target[:, 0])
             lane_angle_losses += criterion_MAE(
                 regs[:, 1], regression_target[:, 1])
             tl_dist_losses += criterion_MAE(regs[:, 2], regression_target[:, 2])
@@ -162,7 +162,7 @@ def main():
                                          drop_last=True)
     
     loaders = [train_loader_left, train_loader_right, train_loader_straight, train_loader_followlane]
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     criterion_MAE = torch.nn.L1Loss()
     criterion_CE = torch.nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.00001)
