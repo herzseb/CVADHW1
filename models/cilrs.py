@@ -87,10 +87,10 @@ class CILRS(nn.Module):
         if command[0] == 0: #LEFT
             return torch.concat((self.action_left(embedding), self.speed_prediction(embedding)), dim=1)
         elif command[0] == 1: #RIGHT
-            return torch.concat((self.action_left(embedding), self.speed_prediction(embedding)), dim=1)
+            return torch.concat((self.action_right(embedding), self.speed_prediction(embedding)), dim=1)
         elif command[0] == 2: #STRAIGHT
-            return torch.concat((self.action_left(embedding), self.speed_prediction(embedding)), dim=1)
+            return torch.concat((self.action_straight(embedding), self.speed_prediction(embedding)), dim=1)
         elif command[0] == 3: #LANEFOLLOW
-          return torch.concat((self.action_left(embedding), self.speed_prediction(embedding)), dim=1)
+          return torch.concat((self.action_follow(embedding), self.speed_prediction(embedding)), dim=1)
         else:
             raise RuntimeError (f"Command has unexpected value {command}")
