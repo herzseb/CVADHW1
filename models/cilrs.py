@@ -16,7 +16,7 @@ class CILRS(nn.Module):
         #     p.requires_grad = False
         self.resnet = models.resnet18(weights='IMAGENET1K_V1')
         for param in self.resnet.parameters():
-            param.requires_grad = False
+            param.requires_grad = True
 
         # Parameters of newly constructed modules have requires_grad=True by default
         self.resnet_out = 512
@@ -24,8 +24,8 @@ class CILRS(nn.Module):
         self.resnet.fc = nn.Linear(num_ftrs, self.resnet_out)
 
         self.dropout = 0.5 #0.2
-        self.hidden = 256
-        self.hidden_speed_prediction = 128
+        self.hidden = 128
+        self.hidden_speed_prediction = 64
         self.speed_features = 64
         self.feature_input = self.resnet_out + self.speed_features
         self.feature_output = 512
