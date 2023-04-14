@@ -32,11 +32,11 @@ def validate(model, dataloader, criterion, batchsize):
                 img=img, command=labels["command"], measured_speed=speed)
             outputs = outputs.to('cpu')
             target = target.to('cpu')
-            loss = weighted_mse_loss(outputs, target, torch.tensor([1.,1.,1.,1.]))
+            loss = weighted_mse_loss(outputs, target, torch.tensor([0.25,0.3,0.4,0.05]))
             running_loss += loss.item()
             # get loss only for commands
             #action_loss = criterion(outputs[...,:3], target[...,:3])
-            action_loss = weighted_mse_loss(outputs[...,:3], target[...,:3], torch.tensor([1.,1.,1.]))
+            action_loss = weighted_mse_loss(outputs[...,:3], target[...,:3], torch.tensor([0.23,0.33,0.43]))
             running_action_loss += action_loss.item()
         avg_loss = running_loss/(i+1)
         avg_action_loss = running_action_loss/(i+1)
@@ -84,7 +84,7 @@ def train(model, loaders, optimizer, criterion, batchsize):
             outputs = outputs.to('cpu')
             target = target.to('cpu')
             #loss = criterion(outputs, target)
-            loss = weighted_mse_loss(outputs, target, torch.tensor([1.,1.,1.,1]))
+            loss = weighted_mse_loss(outputs, target, torch.tensor([0.25,0.3,0.4,0.05]))
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
@@ -119,10 +119,10 @@ def plot_losses(train_loss, val_loss, avg_val_action_loss):
 
 def main():
     # Change these paths to the correct paths in your downloaded expert dataset
-    train_root = "/userfiles/ssafadoust20/expert_data/train"
-    val_root = "/userfiles/ssafadoust20/expert_data/val"
-    # train_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\train\\"
-    # val_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\val\\"
+    # train_root = "/userfiles/ssafadoust20/expert_data/train"
+    # val_root = "/userfiles/ssafadoust20/expert_data/val"
+    train_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\train\\"
+    val_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\val\\"
     model = CILRS().to(device)
     train_dataset_left = ExpertDataset(train_root, transform=True, command=0)
     train_dataset_right = ExpertDataset(train_root, transform=True, command=1)
