@@ -23,7 +23,7 @@ class CILRS(nn.Module):
         num_ftrs = self.resnet.fc.in_features
         self.resnet.fc = nn.Linear(num_ftrs, self.resnet_out)
 
-        self.dropout = 0.2 #0.2
+        self.dropout = 0.5 #0.2
         self.hidden = 256
         self.hidden_speed_prediction = 128
         self.speed_features = 64
@@ -39,6 +39,9 @@ class CILRS(nn.Module):
         self.speed_prediction = nn.Sequential(
           nn.ReLU(),
           nn.Linear(self.resnet_out,self.hidden_speed_prediction),
+          #nn.BatchNorm1d(64),
+          nn.ReLU(),
+          nn.Linear(self.hidden_speed_prediction,self.hidden_speed_prediction),
           #nn.BatchNorm1d(64),
           nn.ReLU(),
           nn.Dropout(p=self.dropout),
