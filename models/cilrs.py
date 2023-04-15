@@ -15,8 +15,8 @@ class CILRS(nn.Module):
         # for p in resnet.parameters():
         #     p.requires_grad = False
         self.resnet = models.resnet18(weights='IMAGENET1K_V1')
-        for param in self.resnet.parameters():
-            param.requires_grad = False
+        # for param in self.resnet.parameters():
+        #     param.requires_grad = False
 
         # Parameters of newly constructed modules have requires_grad=True by default
         self.resnet_out = 512
@@ -48,7 +48,7 @@ class CILRS(nn.Module):
           nn.Linear(self.hidden_speed_prediction,1),
         )
         self.after_concat = nn.Sequential(
-          #nn.BatchNorm1d(1128),
+          nn.BatchNorm1d(self.feature_input),
           nn.LeakyReLU(),
           # nn.Dropout(p=self.dropout),
           nn.Linear(self.feature_input,self.feature_output),
@@ -65,7 +65,7 @@ class CILRS(nn.Module):
           # #nn.BatchNorm1d(512),
           # nn.ReLU(),
           nn.Linear(self.feature_output,self.hidden),
-          #nn.BatchNorm1d(self.hidden),
+          nn.BatchNorm1d(self.hidden),
           nn.LeakyReLU(),
           nn.Linear(self.hidden,self.hidden),
           #nn.BatchNorm1d(self.hidden),
@@ -78,7 +78,7 @@ class CILRS(nn.Module):
           # #nn.BatchNorm1d(512),
           # nn.ReLU(),
           nn.Linear(self.feature_output,self.hidden),
-          #nn.BatchNorm1d(self.hidden),
+          nn.BatchNorm1d(self.hidden),
           nn.LeakyReLU(),
           nn.Linear(self.hidden,self.hidden),
           #nn.BatchNorm1d(self.hidden),
@@ -91,7 +91,7 @@ class CILRS(nn.Module):
           # #nn.BatchNorm1d(512),
           # nn.ReLU(),
           nn.Linear(self.feature_output,self.hidden),
-          #nn.BatchNorm1d(self.hidden),
+          nn.BatchNorm1d(self.hidden),
           nn.LeakyReLU(),
           nn.Linear(self.hidden,self.hidden),
           #nn.BatchNorm1d(self.hidden),
@@ -104,7 +104,7 @@ class CILRS(nn.Module):
           # #nn.BatchNorm1d(512),
           # nn.ReLU(),
           nn.Linear(self.feature_output,self.hidden),
-          #nn.BatchNorm1d(self.hidden),
+          nn.BatchNorm1d(self.hidden),
           nn.LeakyReLU(),
           nn.Linear(self.hidden,self.hidden),
           #nn.BatchNorm1d(self.hidden),

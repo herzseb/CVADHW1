@@ -5,6 +5,7 @@ from torchvision import transforms
 from PIL import Image
 import pickle
 from pathlib import Path
+import matplotlib.pyplot as plt
 
 
 class ExpertDataset(Dataset):
@@ -42,6 +43,14 @@ class ExpertDataset(Dataset):
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
                                  0.229, 0.224, 0.225]),
         ])
+        # steer_angles = []
+        # if command == 3:
+        #     for index in self.json_files:
+        #         data = json.load(
+        #             open(os.path.join(self.measurements_path, index)))
+        #         if data["command"] == 3:
+        #             steer_angles.append(data["steer"])
+        #     plt.hist(steer_angles)
 
     def __len__(self):
         return len(self.json_files)

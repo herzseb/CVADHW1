@@ -67,12 +67,14 @@ def train(model, loaders, optimizer, criterion, batchsize):
             curr_iter = random.choices(iters, weights=(1, 1, 1, 30))[0]
             # get next batch of the selected command
             img, labels = next(curr_iter)
+            current_command = iters.index(curr_iter)
+            if not all([True if command == current_command else False for command in labels["command"]]):
+                raise Exception(f"current command: {current_command} but {labels['command']} found")
             throttle = torch.unsqueeze(
                 labels["throttle"], 1).to(dtype=torch.float32)
             brake = torch.unsqueeze(labels["brake"], 1).to(dtype=torch.float32)
             steer = torch.unsqueeze(labels["steer"], 1).to(dtype=torch.float32)
             speed = torch.unsqueeze(labels["speed"], 1).to(dtype=torch.float32)
-
             target = torch.concat((throttle, brake, steer, speed), dim=1)
 
             optimizer.zero_grad()
@@ -134,7 +136,7 @@ def main():
 
     # You can change these hyper parameters freely, and you can add more
     num_epochs = 50
-    batch_size = 64
+    batch_size = 128
     save_path = "cilrs_model.ckpt"
     checkpoint = "cilrs_checkpoint.pt"
 
@@ -151,7 +153,7 @@ def main():
 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     criterion = torch.nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.00005) #5
+    optimizer = optim.Adam(model.parameters(), lr=0.0005) #5
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
     train_losses = []
     val_losses = []
