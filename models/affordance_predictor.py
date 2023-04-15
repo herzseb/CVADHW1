@@ -120,7 +120,7 @@ class AffordancePredictor(nn.Module):
         features = self.fc_features(features)
         features = torch.unsqueeze(features, dim=1)
         self.memory = torch.cat((features, self.memory), dim=1)
-        self.memory = torch.split(self.memory, [10,1])[0]
+        self.memory = torch.split(self.memory, [10,1], dim=1)[0]
         self.percep_memory = self.memory.clone()
         # self.memory.append(features)
         # if len(self.memory) > self.memory_size:
