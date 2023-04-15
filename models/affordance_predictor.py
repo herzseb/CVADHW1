@@ -12,6 +12,7 @@ class AffordancePredictor(nn.Module):
         self.feature_extractor = models.vgg16(pretrained=True).features
         
         self.memory = [torch.zeros([64,1,512]) for i in range(10)]
+        self.memory = self.memory.to(device)
         self.queue_length = 10
         self.input_size = 512
         self.hidden_size = 512
