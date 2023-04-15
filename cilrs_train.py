@@ -32,11 +32,11 @@ def validate(model, dataloader, criterion, batchsize):
                 img=img, command=labels["command"], measured_speed=speed)
             outputs = outputs.to('cpu')
             target = target.to('cpu')
-            loss = weighted_mse_loss(outputs, target, torch.tensor([0.25,0.3,0.4,0.05]))
+            loss = weighted_mse_loss(outputs, target, torch.tensor([1,2,5,0.1]))
             running_loss += loss.item()
             # get loss only for commands
             #action_loss = criterion(outputs[...,:3], target[...,:3])
-            action_loss = weighted_mse_loss(outputs[...,:3], target[...,:3], torch.tensor([0.23,0.33,0.43]))
+            action_loss = weighted_mse_loss(outputs[...,:3], target[...,:3], torch.tensor([1, 2 ,5]))
             running_action_loss += action_loss.item()
         avg_loss = running_loss/(i+1)
         avg_action_loss = running_action_loss/(i+1)
@@ -84,7 +84,7 @@ def train(model, loaders, optimizer, criterion, batchsize):
             outputs = outputs.to('cpu')
             target = target.to('cpu')
             #loss = criterion(outputs, target)
-            loss = weighted_mse_loss(outputs, target, torch.tensor([0.25,0.3,0.4,0.05]))
+            loss = weighted_mse_loss(outputs, target, torch.tensor([1, 2, 5, 0.1]))
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
@@ -151,7 +151,7 @@ def main():
 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     criterion = torch.nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0001) #5
+    optimizer = optim.Adam(model.parameters(), lr=0.00005) #5
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
     train_losses = []
     val_losses = []

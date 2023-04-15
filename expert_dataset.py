@@ -51,6 +51,7 @@ class ExpertDataset(Dataset):
         """Return RGB images and measurements"""
         file_name = self.json_files[index]
         img = Image.open(os.path.join(self.rgb_path, os.path.splitext(file_name)[0]+'.png'))
+        img = img[[2,1,0], ...]
         if self.transform:
             img = self.preprocess(img)
         else:

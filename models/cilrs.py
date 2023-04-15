@@ -16,15 +16,15 @@ class CILRS(nn.Module):
         #     p.requires_grad = False
         self.resnet = models.resnet18(weights='IMAGENET1K_V1')
         for param in self.resnet.parameters():
-            param.requires_grad = True
+            param.requires_grad = False
 
         # Parameters of newly constructed modules have requires_grad=True by default
         self.resnet_out = 512
         num_ftrs = self.resnet.fc.in_features
         self.resnet.fc = nn.Linear(num_ftrs, self.resnet_out)
 
-        self.dropout = 0.5 #0.2
-        self.hidden = 128
+        self.dropout = 0.3 #0.2
+        self.hidden = 64
         self.hidden_speed_prediction = 64
         self.speed_features = 64
         self.feature_input = self.resnet_out + self.speed_features
@@ -32,29 +32,29 @@ class CILRS(nn.Module):
         self.speed_encoding = nn.Sequential(
           nn.Linear(1, self.speed_features),
           #nn.BatchNorm1d(64),
-          nn.ReLU(),
-          nn.Dropout(p=self.dropout),
-          nn.Linear(self.speed_features,self.speed_features),
+          # nn.ReLU(),
+          # nn.Dropout(p=self.dropout),
+          # nn.Linear(self.speed_features,self.speed_features),
         )
         self.speed_prediction = nn.Sequential(
-          nn.ReLU(),
+          nn.LeakyReLU(),
           nn.Linear(self.resnet_out,self.hidden_speed_prediction),
           #nn.BatchNorm1d(64),
-          nn.ReLU(),
+          nn.LeakyReLU(),
           nn.Linear(self.hidden_speed_prediction,self.hidden_speed_prediction),
           #nn.BatchNorm1d(64),
-          nn.ReLU(),
+          nn.LeakyReLU(),
           nn.Dropout(p=self.dropout),
           nn.Linear(self.hidden_speed_prediction,1),
         )
         self.after_concat = nn.Sequential(
           #nn.BatchNorm1d(1128),
-          nn.ReLU(),
-          nn.Dropout(p=self.dropout),
+          nn.LeakyReLU(),
+          # nn.Dropout(p=self.dropout),
           nn.Linear(self.feature_input,self.feature_output),
           #nn.BatchNorm1d(1128),
-          nn.ReLU(),
-          nn.Dropout(p=self.dropout),
+          nn.LeakyReLU(),
+          #nn.Dropout(p=self.dropout),
           # nn.Linear(self.blocks_input,self.feature_output),
           # #nn.BatchNorm1d(512),
           # nn.ReLU(),
@@ -66,10 +66,10 @@ class CILRS(nn.Module):
           # nn.ReLU(),
           nn.Linear(self.feature_output,self.hidden),
           #nn.BatchNorm1d(self.hidden),
-          nn.ReLU(),
+          nn.LeakyReLU(),
           nn.Linear(self.hidden,self.hidden),
           #nn.BatchNorm1d(self.hidden),
-          nn.ReLU(),
+          nn.LeakyReLU(),
           nn.Dropout(p=self.dropout),
           nn.Linear(self.hidden,3)
         )
@@ -79,10 +79,10 @@ class CILRS(nn.Module):
           # nn.ReLU(),
           nn.Linear(self.feature_output,self.hidden),
           #nn.BatchNorm1d(self.hidden),
-          nn.ReLU(),
+          nn.LeakyReLU(),
           nn.Linear(self.hidden,self.hidden),
           #nn.BatchNorm1d(self.hidden),
-          nn.ReLU(),
+          nn.LeakyReLU(),
           nn.Dropout(p=self.dropout),
           nn.Linear(self.hidden,3)
         )
@@ -92,10 +92,10 @@ class CILRS(nn.Module):
           # nn.ReLU(),
           nn.Linear(self.feature_output,self.hidden),
           #nn.BatchNorm1d(self.hidden),
-          nn.ReLU(),
+          nn.LeakyReLU(),
           nn.Linear(self.hidden,self.hidden),
           #nn.BatchNorm1d(self.hidden),
-          nn.ReLU(),
+          nn.LeakyReLU(),
           nn.Dropout(p=self.dropout),
           nn.Linear(self.hidden,3)
         )
@@ -105,10 +105,10 @@ class CILRS(nn.Module):
           # nn.ReLU(),
           nn.Linear(self.feature_output,self.hidden),
           #nn.BatchNorm1d(self.hidden),
-          nn.ReLU(),
+          nn.LeakyReLU(),
           nn.Linear(self.hidden,self.hidden),
           #nn.BatchNorm1d(self.hidden),
-          nn.ReLU(),
+          nn.LeakyReLU(),
           nn.Dropout(p=self.dropout),
           nn.Linear(self.hidden,3)
         )
