@@ -90,7 +90,7 @@ def train(model, loaders, optimizer, criterion_MAE, criterion_CE):
             loss = criterion_MAE(regs, regression_target)
             loss += criterion_CE(clas,
                                  torch.flatten(tl_state).to(dtype=torch.long))
-            loss.backward()
+            loss.backward(retain_graph=True)
             optimizer.step()
             running_loss += loss.item()
             it = it + 1
