@@ -11,7 +11,8 @@ class AffordancePredictor(nn.Module):
         super(AffordancePredictor, self).__init__()
         self.feature_extractor = models.vgg16(pretrained=True).features
         
-        self.memory = [torch.zeros([64,1,512],device=device) for i in range(10)]
+        # self.memory = [torch.zeros([64,1,512],device=device) for i in range(10)]
+        self.memory = torch.zeros([64,10,512],device=device)
         self.queue_length = 10
         self.input_size = 512
         self.hidden_size = 512
@@ -118,10 +119,13 @@ class AffordancePredictor(nn.Module):
         features = torch.relu(features)
         features = self.fc_features(features)
         features = torch.unsqueeze(features, dim=1)
-        self.memory.append(features)
-        if len(self.memory) > self.memory_size:
-            self.memory.pop(0)
-        self.percep_memory = torch.cat(self.memory[::-1], dim=1)
+        self.memory = torch.cat((features, self.memory), dim=1)
+        self.memory = torch.split(self.memory, [10,1])[0]
+        self.percep_memory = self.memory.clone()
+        # self.memory.append(features)
+        # if len(self.memory) > self.memory_size:
+        #     self.memory.pop(0)
+        # self.percep_memory = torch.cat(self.memory[::-1], dim=1)
 
         self.percep_memory = torch.relu(self.percep_memory)
         self.percep_memory = self.do(self.percep_memory)
