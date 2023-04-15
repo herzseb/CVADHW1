@@ -9,19 +9,20 @@ class AffordancePredictor(nn.Module):
 
     def __init__(self):
         super(AffordancePredictor, self).__init__()
-        self.feature_extractor = models.vgg16(pretrained=True)
-        self.feature_extractor.eval()
-        # self.percep_memory = torch.zeros(64, 9, 1000)
-        # self.percep_memory = self.percep_memory.to(device)
+        self.feature_extractor = models.vgg16(pretrained=True).features
+        
+        self.memory = [torch.zeros([64,1,512]) for i in range(10)]
         self.queue_length = 10
-        self.input_size = 1000
+        self.input_size = 512
         self.hidden_size = 512
         self.num_layers = 3
         self.drop_out = 0.2
         self.in_channel = 10
         self.out_channels = 1
+        self.memory_size = 10
         self.do = nn.Dropout(self.drop_out)
         self.grus = nn.ModuleList()
+        self.fc_features =  nn.Linear(512 * 7 * 7, self.input_size)
         for i in range(7):
             self.grus.append(torch.nn.GRU(input_size=self.input_size, hidden_size=self.hidden_size,
                                           num_layers=self.num_layers, batch_first=True, dropout=self.drop_out))
@@ -44,7 +45,7 @@ class AffordancePredictor(nn.Module):
         self.blocks = nn.ModuleList()
         for i in range(7):
             self.blocks.append(nn.Sequential(
-                nn.BatchNorm1d(10),
+                nn.BatchNorm1d(self.memory_size),
                 nn.ReLU(),
                 nn.Dropout(self.drop_out),
                 torch.nn.Conv1d(in_channels=self.in_channel,
@@ -104,19 +105,24 @@ class AffordancePredictor(nn.Module):
         # )
 
         self.traffic_light_state = nn.Sequential(
-            nn.Linear(1000, 512),
-            nn.BatchNorm1d(512),
+            nn.Linear( self.input_size, self.hidden_size),
+            nn.BatchNorm1d(self.hidden_size),
             nn.ReLU(),
             nn.Dropout(self.drop_out),
-            nn.Linear(512, 3),
+            nn.Linear(self.hidden_size, 3),
         )
 
-    def forward(self, img, command, memory): # THE ZERO MEMORY IS GETTING RETURNED
+    def forward(self, img, command):
         features = self.feature_extractor(img)
+        features = features.view(-1, 512 * 7 * 7)
+        features = torch.relu(features)
+        features = self.fc_features(features)
         features = torch.unsqueeze(features, dim=1)
-        self.percep_memory = torch.concat(
-            (features, memory), dim=1) # DETACH AND COPY
-        self.percep_memory = self.batchnorm(self.percep_memory)
+        self.memory.append(features)
+        if len(self.memory) > self.memory_size:
+            self.memory.pop(0)
+        self.percep_memory = torch.cat(self.memory[::-1], dim=1)
+
         self.percep_memory = torch.relu(self.percep_memory)
         self.percep_memory = self.do(self.percep_memory)
 
@@ -145,4 +151,4 @@ class AffordancePredictor(nn.Module):
         affordance_traffic_light_state = self.traffic_light_state(
             self.percep_memory[:, 0, :])
         
-        return [torch.squeeze(torch.concat((affordance_lane_dist, affordance_angle, affordance_traffic_light_distance), dim=1),dim=2), affordance_traffic_light_state], memory
+        return [torch.squeeze(torch.concat((affordance_lane_dist, affordance_angle, affordance_traffic_light_distance), dim=1),dim=2), affordance_traffic_light_state]
