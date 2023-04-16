@@ -16,7 +16,7 @@ class CILRS(nn.Module):
         #     p.requires_grad = False
         self.resnet = models.resnet18(weights='IMAGENET1K_V1')
         for param in self.resnet.parameters():
-            param.requires_grad = False
+            param.requires_grad = True
 
         # Parameters of newly constructed modules have requires_grad=True by default
         self.resnet_out = 512
