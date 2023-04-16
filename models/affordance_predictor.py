@@ -10,9 +10,6 @@ class AffordancePredictor(nn.Module):
     def __init__(self):
         super(AffordancePredictor, self).__init__()
         self.feature_extractor = models.vgg16(pretrained=True).features
-        
-        # self.memory = [torch.zeros([64,1,512],device=device) for i in range(10)]
-        self.memory = torch.zeros([64,10,512],device=device)
         self.queue_length = 10
         self.input_size = 512
         self.hidden_size = 512
@@ -28,20 +25,6 @@ class AffordancePredictor(nn.Module):
             self.grus.append(torch.nn.GRU(input_size=self.input_size, hidden_size=self.hidden_size,
                                           num_layers=self.num_layers, batch_first=True, dropout=self.drop_out))
 
-        # lane_dist_left_gru = torch.nn.GRU(input_size=self.input_size, hidden_layers=self.hidden_size,
-        #                                   num_layers=self.num_layers, batch_first=True, dropout=self.drop_out)
-        # lane_dist_right_gru = torch.nn.GRU(input_size=self.input_size, hidden_layers=self.hidden_size,
-        #                                    num_layers=self.num_layers, batch_first=True, dropout=self.drop_out)
-        # lane_dist_straight_gru = torch.nn.GRU(input_size=self.input_size, hidden_layers=self.hidden_size,
-        #                                       num_layers=self.num_layers, batch_first=True, dropout=self.drop_out)
-        # angle_left_gru = torch.nn.GRU(input_size=self.input_size, hidden_layers=self.hidden_size,
-        #                               num_layers=self.num_layers, batch_first=True, dropout=self.drop_out)
-        # angle_right_gru = torch.nn.GRU(input_size=self.input_size, hidden_layers=self.hidden_size,
-        #                                num_layers=self.num_layers, batch_first=True, dropout=self.drop_out)
-        # angle_straight_gru = torch.nn.GRU(input_size=self.input_size, hidden_layers=self.hidden_size,
-        #                                   num_layers=self.num_layers, batch_first=True, dropout=self.drop_out)
-        # tl_state_gru = torch.nn.GRU(input_size=self.input_size, hidden_layers=self.hidden_size,
-        #                             num_layers=self.num_layers, batch_first=True, dropout=self.drop_out)
         self.batchnorm = torch.nn.BatchNorm1d(10)
         self.blocks = nn.ModuleList()
         for i in range(7):
@@ -55,55 +38,6 @@ class AffordancePredictor(nn.Module):
                 nn.Dropout(self.drop_out),
                 nn.Linear(self.hidden_size, 1),
             ))
-        # self.lane_dist_left = nn.Sequential(
-        #     nn.BatchNorm1d(10),
-        #     nn.ReLU(),
-        #     nn.Dropout(self.drop_out),
-        #     torch.nn.Conv1d(in_channels=self.in_channel,
-        #                     out_channels=self.out_channels, kernel_size=3, padding="same"),
-        #     nn.BatchNorm1d(self.hidden_size),
-        #     nn.ReLU(),
-        #     nn.Dropout(self.drop_out),
-        #     nn.Linear(self.hidden_size, 1),
-        # )
-        # self.lane_dist_right = nn.Sequential(
-        #     nn.BatchNorm1d(10),
-        #     nn.ReLU(),
-        #     nn.Dropout(self.drop_out),
-        #     nn.Linear(self.hidden_size, 1),
-        # )
-        # self.lane_dist_straight = nn.Sequential(
-        #     nn.BatchNorm1d(10),
-        #     nn.ReLU(),
-        #     nn.Dropout(self.drop_out),
-        #     nn.Linear(self.hidden_size, 1),
-        # )
-
-        # self.angle_left = nn.Sequential(
-        #     nn.BatchNorm1d(10),
-        #     nn.ReLU(),
-        #     nn.Dropout(self.drop_out),
-        #     nn.Linear(self.hidden_size, 1),
-        # )
-        # self.angle_right = nn.Sequential(
-        #     nn.BatchNorm1d(10),
-        #     nn.ReLU(),
-        #     nn.Dropout(self.drop_out),
-        #     nn.Linear(self.hidden_size, 1),
-        # )
-        # self.angle_straight = nn.Sequential(
-        #     nn.BatchNorm1d(10),
-        #     nn.ReLU(),
-        #     nn.Dropout(self.drop_out),
-        #     nn.Linear(self.hidden_size, 1),
-        # )
-
-        # self.traffic_light_distance = nn.Sequential(
-        #     nn.BatchNorm1d(10),
-        #     nn.ReLU(),
-        #     nn.Dropout(self.drop_out),
-        #     nn.Linear(self.hidden_size, 1),
-        # )
 
         self.traffic_light_state = nn.Sequential(
             nn.Linear( self.input_size, self.hidden_size),
@@ -113,19 +47,13 @@ class AffordancePredictor(nn.Module):
             nn.Linear(self.hidden_size, 3),
         )
 
-    def forward(self, img, command):
+    def forward(self, img, command, memory_stack):
         features = self.feature_extractor(img)
         features = features.view(-1, 512 * 7 * 7)
         features = torch.relu(features)
         features = self.fc_features(features)
         features = torch.unsqueeze(features, dim=1)
-        self.memory = torch.cat((features, self.memory), dim=1)
-        self.memory = torch.split(self.memory, [10,1], dim=1)[0]
-        self.percep_memory = self.memory.clone()
-        # self.memory.append(features)
-        # if len(self.memory) > self.memory_size:
-        #     self.memory.pop(0)
-        # self.percep_memory = torch.cat(self.memory[::-1], dim=1)
+        self.percep_memory = torch.cat((features, memory_stack), dim=1)
 
         self.percep_memory = torch.relu(self.percep_memory)
         self.percep_memory = self.do(self.percep_memory)
@@ -152,7 +80,6 @@ class AffordancePredictor(nn.Module):
         affordance_traffic_light_distance = self.blocks[6](
             self.grus[6](self.percep_memory)[0])
 
-        affordance_traffic_light_state = self.traffic_light_state(
-            self.percep_memory[:, 0, :])
-        
-        return [torch.squeeze(torch.concat((affordance_lane_dist, affordance_angle, affordance_traffic_light_distance), dim=1),dim=2), affordance_traffic_light_state]
+        affordance_traffic_light_state = self.traffic_light_state(torch.squeeze(features, dim=1))
+        features_to_memory = features.detach()
+        return [torch.squeeze(torch.concat((affordance_lane_dist, affordance_angle, affordance_traffic_light_distance), dim=1),dim=2), affordance_traffic_light_state], features_to_memory

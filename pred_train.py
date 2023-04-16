@@ -17,6 +17,7 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
     tl_dist_losses = 0
     tl_state_losses = 0
     model.eval()
+    memory_stack = torch.zeros([64, 9, 512], device=device)
     with torch.no_grad():
         for i, data in enumerate(dataloader):
             img, labels = data
@@ -32,8 +33,10 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
                 (lane_dist, lane_angle, tl_dist), dim=1)
 
             img = img.to(device)
-            outputs = model(
-                img=img, command=labels["command"])
+            outputs, feature_to_memory = model(
+                img=img, command=labels["command"], memory_stack=memory_stack)
+            memory_stack = torch.cat((feature_to_memory, memory_stack), dim=1)
+            memory_stack = torch.split(memory_stack, [9,1], dim=1)[0]
             regs = outputs[0].to('cpu')
             clas = outputs[1].to('cpu')
             loss = criterion_MAE(regs, regression_target)
@@ -46,11 +49,11 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
             tl_dist_losses += criterion_MAE(regs[:, 2], regression_target[:, 2])
             tl_state_losses += criterion_CE(clas,
                                  torch.flatten(tl_state).to(dtype=torch.long))
-        running_loss = running_loss/(i * img.size()[0])
-        lane_dist_losses = lane_dist_losses/(i * img.size()[0])
-        lane_angle_losses = lane_angle_losses/(i * img.size()[0])
-        tl_dist_losses = tl_dist_losses/(i * img.size()[0])
-        tl_state_losses = tl_state_losses/(i * img.size()[0])
+        running_loss = running_loss/(i+1)
+        lane_dist_losses = lane_dist_losses/(i+1)
+        lane_angle_losses = lane_angle_losses/(i+1)
+        tl_dist_losses = tl_dist_losses/(i+1)
+        tl_state_losses = tl_state_losses/(i+1)
         return running_loss, lane_dist_losses, lane_angle_losses, tl_dist_losses, tl_state_losses
 
 
@@ -63,7 +66,7 @@ def train(model, loaders, optimizer, criterion_MAE, criterion_CE):
     loader_iter_right = iter(loaders[1])
     loader_iter_straight = iter(loaders[2])
     loader_iter_followlane = iter(loaders[3])
-
+    memory_stack = torch.zeros([64, 9, 512], device=device)
     iters = [loader_iter_left, loader_iter_right,
              loader_iter_straight, loader_iter_followlane]
     while True:
@@ -83,15 +86,16 @@ def train(model, loaders, optimizer, criterion_MAE, criterion_CE):
             optimizer.zero_grad()
 
             img = img.to(device)
-            outputs = model(
-                img=img, command=labels["command"])
+            outputs, feature_to_memory = model(
+                img=img, command=labels["command"], memory_stack=memory_stack)
+            memory_stack = torch.cat((feature_to_memory, memory_stack), dim=1)
+            memory_stack = torch.split(memory_stack, [9,1], dim=1)[0]
             regs = outputs[0].to('cpu')
             clas = outputs[1].to('cpu')
             loss = criterion_MAE(regs, regression_target)
             loss += criterion_CE(clas,
                                  torch.flatten(tl_state).to(dtype=torch.long))
-            with torch.autograd.set_detect_anomaly(True):
-                loss.backward(retain_graph=True)
+            loss.backward()
             optimizer.step()
             running_loss += loss.item()
             it = it + 1
@@ -108,7 +112,7 @@ def train(model, loaders, optimizer, criterion_MAE, criterion_CE):
             if left_fin and right_fin and straight_fin and followlane_fin:
                 break
 
-    avg_loss = running_loss/(it * img.size()[0])
+    avg_loss = running_loss/(it+1)
     print(avg_loss)
     return avg_loss
 
