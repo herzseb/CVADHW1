@@ -23,8 +23,8 @@ class CILRS(nn.Module):
         num_ftrs = self.resnet.fc.in_features
         self.resnet.fc = nn.Linear(num_ftrs, self.resnet_out)
 
-        self.dropout = 0.3 #0.2
-        self.hidden = 64
+        self.dropout = 0.4 #0.2
+        self.hidden = 128
         self.hidden_speed_prediction = 64
         self.speed_features = 64
         self.feature_input = self.resnet_out + self.speed_features
@@ -37,12 +37,12 @@ class CILRS(nn.Module):
           # nn.Linear(self.speed_features,self.speed_features),
         )
         self.speed_prediction = nn.Sequential(
-          nn.LeakyReLU(),
-          nn.Linear(self.resnet_out,self.hidden_speed_prediction),
+          # nn.LeakyReLU(),
+          # nn.Linear(self.resnet_out,self.hidden_speed_prediction),
           #nn.BatchNorm1d(64),
           nn.LeakyReLU(),
           nn.Linear(self.hidden_speed_prediction,self.hidden_speed_prediction),
-          #nn.BatchNorm1d(64),
+          nn.BatchNorm1d(self.hidden_speed_prediction),
           nn.LeakyReLU(),
           nn.Dropout(p=self.dropout),
           nn.Linear(self.hidden_speed_prediction,1),
@@ -50,9 +50,9 @@ class CILRS(nn.Module):
         self.after_concat = nn.Sequential(
           nn.BatchNorm1d(self.feature_input),
           nn.LeakyReLU(),
-          # nn.Dropout(p=self.dropout),
+          nn.Dropout(p=self.dropout),
           nn.Linear(self.feature_input,self.feature_output),
-          #nn.BatchNorm1d(1128),
+          nn.BatchNorm1d(self.feature_output),
           nn.LeakyReLU(),
           #nn.Dropout(p=self.dropout),
           # nn.Linear(self.blocks_input,self.feature_output),
@@ -64,12 +64,14 @@ class CILRS(nn.Module):
           # nn.Linear(512,512),
           # #nn.BatchNorm1d(512),
           # nn.ReLU(),
+          nn.Dropout(p=self.dropout),
           nn.Linear(self.feature_output,self.hidden),
           nn.BatchNorm1d(self.hidden),
           nn.LeakyReLU(),
-          nn.Linear(self.hidden,self.hidden),
-          #nn.BatchNorm1d(self.hidden),
-          nn.LeakyReLU(),
+          # nn.Dropout(p=self.dropout),
+          # nn.Linear(self.hidden,self.hidden),
+          # nn.BatchNorm1d(self.hidden),
+          # nn.LeakyReLU(),
           nn.Dropout(p=self.dropout),
           nn.Linear(self.hidden,3)
         )
@@ -77,12 +79,14 @@ class CILRS(nn.Module):
           # nn.Linear(512,512),
           # #nn.BatchNorm1d(512),
           # nn.ReLU(),
+          nn.Dropout(p=self.dropout),
           nn.Linear(self.feature_output,self.hidden),
           nn.BatchNorm1d(self.hidden),
           nn.LeakyReLU(),
-          nn.Linear(self.hidden,self.hidden),
-          #nn.BatchNorm1d(self.hidden),
-          nn.LeakyReLU(),
+          # nn.Dropout(p=self.dropout),
+          # nn.Linear(self.hidden,self.hidden),
+          # nn.BatchNorm1d(self.hidden),
+          # nn.LeakyReLU(),
           nn.Dropout(p=self.dropout),
           nn.Linear(self.hidden,3)
         )
@@ -90,12 +94,14 @@ class CILRS(nn.Module):
           # nn.Linear(512,512),
           # #nn.BatchNorm1d(512),
           # nn.ReLU(),
+          nn.Dropout(p=self.dropout),
           nn.Linear(self.feature_output,self.hidden),
           nn.BatchNorm1d(self.hidden),
           nn.LeakyReLU(),
-          nn.Linear(self.hidden,self.hidden),
-          #nn.BatchNorm1d(self.hidden),
-          nn.LeakyReLU(),
+          # nn.Dropout(p=self.dropout),
+          # nn.Linear(self.hidden,self.hidden),
+          # nn.BatchNorm1d(self.hidden),
+          # nn.LeakyReLU(),
           nn.Dropout(p=self.dropout),
           nn.Linear(self.hidden,3)
         )
@@ -103,12 +109,14 @@ class CILRS(nn.Module):
           # nn.Linear(512,512),
           # #nn.BatchNorm1d(512),
           # nn.ReLU(),
+          nn.Dropout(p=self.dropout),
           nn.Linear(self.feature_output,self.hidden),
           nn.BatchNorm1d(self.hidden),
           nn.LeakyReLU(),
-          nn.Linear(self.hidden,self.hidden),
-          #nn.BatchNorm1d(self.hidden),
-          nn.LeakyReLU(),
+          # nn.Dropout(p=self.dropout),
+          # nn.Linear(self.hidden,self.hidden),
+          # nn.BatchNorm1d(self.hidden),
+          # nn.LeakyReLU(),
           nn.Dropout(p=self.dropout),
           nn.Linear(self.hidden,3)
         )
