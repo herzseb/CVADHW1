@@ -17,7 +17,7 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
     tl_dist_losses = 0
     tl_state_losses = 0
     model.eval()
-    memory_stack = torch.zeros([64, 9, 512], device=device)
+    memory_stack = torch.zeros([1, 9, 512], device=device)
     with torch.no_grad():
         for i, data in enumerate(dataloader):
             img, labels = data
