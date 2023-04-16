@@ -37,13 +37,13 @@ class CILRS(nn.Module):
           # nn.Linear(self.speed_features,self.speed_features),
         )
         self.speed_prediction = nn.Sequential(
-          # nn.LeakyReLU(),
-          # nn.Linear(self.resnet_out,self.hidden_speed_prediction),
-          #nn.BatchNorm1d(64),
           nn.LeakyReLU(),
-          nn.Linear(self.hidden_speed_prediction,self.hidden_speed_prediction),
+          nn.Linear(self.resnet_out,self.hidden_speed_prediction),
           nn.BatchNorm1d(self.hidden_speed_prediction),
           nn.LeakyReLU(),
+          # nn.Linear(self.hidden_speed_prediction,self.hidden_speed_prediction),
+          # nn.BatchNorm1d(self.hidden_speed_prediction),
+          # nn.LeakyReLU(),
           nn.Dropout(p=self.dropout),
           nn.Linear(self.hidden_speed_prediction,1),
         )
