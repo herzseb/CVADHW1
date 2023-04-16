@@ -176,13 +176,13 @@ def main():
     for i in range(num_epochs):
         train_losses.append(train(model, loaders, optimizer,
                             criterion_MAE, criterion_CE))
-        running_loss, lane_dist_losses, lane_angle_losses, tl_dist_losses, tl_state_losses = validate(model, val_loader,
+        running_loss, lane_dist_loss, lane_angle_loss, tl_dist_loss, tl_state_loss = validate(model, val_loader,
                                                                                                       criterion_MAE, criterion_CE)
         val_losses.append(running_loss)
-        lane_dist_losses.append(lane_dist_losses)
-        lane_angle_losses.append(lane_angle_losses)
-        tl_dist_losses.append(tl_dist_losses)
-        tl_state_losses.append(tl_state_losses)
+        lane_dist_losses.append(lane_dist_loss)
+        lane_angle_losses.append(lane_angle_loss)
+        tl_dist_losses.append(tl_dist_loss)
+        tl_state_losses.append(tl_state_loss)
         torch.save({
             'epoch': i,
             'model_state_dict': model.state_dict(),
