@@ -58,6 +58,7 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
 
 
 def train(model, loaders, optimizer, criterion_MAE, criterion_CE):
+    model.train()
     """Train model on the training dataset for one epoch"""
     running_loss = 0.0
     it = 0
