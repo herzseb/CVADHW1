@@ -12,8 +12,8 @@ class AffordancePredictor(nn.Module):
         self.feature_extractor = models.vgg16(pretrained=True).features
         self.queue_length = 10
         self.input_size = 512
-        self.hidden_size = 512
-        self.num_layers = 3
+        self.hidden_size = 256
+        self.num_layers = 2
         self.drop_out = 0.2
         self.in_channel = 10
         self.out_channels = 1

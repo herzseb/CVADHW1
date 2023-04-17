@@ -197,8 +197,8 @@ def main():
             early_stopper += 1
         if early_stopper >= 10:
             break
-    plot_losses(train_losses, val_losses, lane_dist_losses,
-                lane_angle_losses, tl_dist_losses, tl_state_losses)
+        plot_losses(train_losses, val_losses, lane_dist_losses,
+                    lane_angle_losses, tl_dist_losses, tl_state_losses)
 
 
 if __name__ == "__main__":
