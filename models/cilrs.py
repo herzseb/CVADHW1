@@ -41,7 +41,7 @@ class CILRS(nn.Module):
             nn.BatchNorm1d(self.feature_output),
             nn.LeakyReLU(),
         )
-        self.action_block = []
+        self.action_block = nn.ModuleList()
         for i in range(4):
             self.action_block.append(nn.Sequential(
                 nn.Dropout(p=self.dropout),
