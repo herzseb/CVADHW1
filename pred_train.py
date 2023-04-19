@@ -54,11 +54,11 @@ def validate(model, dataloader, criterion_MAE, criterion_CE):
         lane_angle_losses = lane_angle_losses/(i+1)
         tl_dist_losses = tl_dist_losses/(i+1)
         tl_state_losses = tl_state_losses/(i+1)
-        print("loss", running_loss)
-        print("lane_dist_losses", lane_dist_losses)
-        print("lane_angle_losses", lane_angle_losses)
-        print("tl_dist_losses", tl_dist_losses)
-        print("tl_state_losses", tl_state_losses)
+        print("loss ", running_loss)
+        print("lane_dist_losses ", lane_dist_losses)
+        print("lane_angle_losses ", lane_angle_losses)
+        print("tl_dist_losses ", tl_dist_losses)
+        print("tl_state_losses ", tl_state_losses)
         return running_loss, lane_dist_losses, lane_angle_losses, tl_dist_losses, tl_state_losses
 
 

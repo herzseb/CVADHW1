@@ -11,7 +11,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def weighted_mse_loss(input, target, weight):
     return torch.mean(weight * torch.abs(input - target))
 
-def validate(model, dataloader, criterion, batchsize):
+def validate(model, dataloader):
     """Validate model performance on the validation dataset"""
     running_loss = 0
     running_action_loss = 0
@@ -19,13 +19,14 @@ def validate(model, dataloader, criterion, batchsize):
     with torch.no_grad():
         for i, data in enumerate(dataloader):
             img, labels = data
+            # construct target vector
             throttle = torch.unsqueeze(
                 labels["throttle"], 1).to(dtype=torch.float32)
             brake = torch.unsqueeze(labels["brake"], 1).to(dtype=torch.float32)
             steer = torch.unsqueeze(labels["steer"], 1).to(dtype=torch.float32)
             speed = torch.unsqueeze(labels["speed"], 1).to(dtype=torch.float32)
-
             target = torch.concat((throttle, brake, steer, speed), dim=1)
+            
             img = img.to(device)
             speed = speed.to(device)
             outputs = model(
@@ -34,8 +35,6 @@ def validate(model, dataloader, criterion, batchsize):
             target = target.to('cpu')
             loss = weighted_mse_loss(outputs, target, torch.tensor([1,2,5,0.1]))
             running_loss += loss.item()
-            # get loss only for commands
-            #action_loss = criterion(outputs[...,:3], target[...,:3])
             action_loss = weighted_mse_loss(outputs[...,:3], target[...,:3], torch.tensor([1, 2 ,5]))
             running_action_loss += action_loss.item()
         avg_loss = running_loss/(i+1)
@@ -46,7 +45,7 @@ def validate(model, dataloader, criterion, batchsize):
         return avg_loss, avg_action_loss
 
 
-def train(model, loaders, optimizer, criterion, batchsize):
+def train(model, loaders, optimizer):
     """Train model on the training dataset for one epoch"""
     model.train()
     running_loss = 0.0
@@ -68,8 +67,10 @@ def train(model, loaders, optimizer, criterion, batchsize):
             # get next batch of the selected command
             img, labels = next(curr_iter)
             current_command = iters.index(curr_iter)
+            # check if batch has same command
             if not all([True if command == current_command else False for command in labels["command"]]):
                 raise Exception(f"current command: {current_command} but {labels['command']} found")
+            #construct target vector
             throttle = torch.unsqueeze(
                 labels["throttle"], 1).to(dtype=torch.float32)
             brake = torch.unsqueeze(labels["brake"], 1).to(dtype=torch.float32)
@@ -85,7 +86,6 @@ def train(model, loaders, optimizer, criterion, batchsize):
                 img=img, command=labels["command"], measured_speed=speed)
             outputs = outputs.to('cpu')
             target = target.to('cpu')
-            #loss = criterion(outputs, target)
             loss = weighted_mse_loss(outputs, target, torch.tensor([1, 2, 5, 0.1]))
             loss.backward()
             optimizer.step()
@@ -152,7 +152,6 @@ def main():
     
 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
-    criterion = torch.nn.MSELoss()
     optimizer = optim.SGD(model.parameters(), lr=0.0005) #5
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.5)
     train_losses = []
@@ -162,8 +161,8 @@ def main():
     early_stopper = 0
     for i in range(num_epochs):
         print("EPOCH ", i)
-        train_losses.append(train(model, loaders, optimizer, criterion, batch_size))
-        avg_val_loss, avg_val_action_loss = validate(model, val_loader, criterion, 1)
+        train_losses.append(train(model, loaders, optimizer))
+        avg_val_loss, avg_val_action_loss = validate(model, val_loader)
         val_losses.append(avg_val_loss)
         val_action_losses.append(avg_val_action_loss)
         scheduler.step()
