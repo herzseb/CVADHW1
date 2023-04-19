@@ -138,10 +138,10 @@ def plot_losses(train_loss, val_loss, lane_dist_losses, lane_angle_losses, tl_di
 
 def main():
     # Change these paths to the correct paths in your downloaded expert dataset
-    # train_root = "/userfiles/ssafadoust20/expert_data/train"
-    # val_root = "/userfiles/ssafadoust20/expert_data/val"
-    train_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\train\\"
-    val_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\val\\"
+    train_root = "/userfiles/ssafadoust20/expert_data/train"
+    val_root = "/userfiles/ssafadoust20/expert_data/val"
+    # train_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\train\\"
+    # val_root = "C:\\Users\\User\\Desktop\\expert_data\\expert_data\\val\\"
     model = AffordancePredictor().to(device)
     train_dataset_left = ExpertDataset(train_root, transform=True, command=0)
     train_dataset_right = ExpertDataset(train_root, transform=True, command=1)
