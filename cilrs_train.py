@@ -117,6 +117,7 @@ def plot_losses(train_loss, val_loss, avg_val_action_loss):
     plt.plot(avg_val_action_loss, label='val_action_loss')
     plt.legend()
     plt.savefig("freezetrain_plot.png")
+    plt.close()
 
 
 def main():
@@ -179,7 +180,7 @@ def main():
             early_stopper += 1
         if early_stopper >= 10:
             break
-    plot_losses(train_losses, val_losses, val_action_losses)
+        plot_losses(train_losses, val_losses, val_action_losses)
 
 
 if __name__ == "__main__":
