@@ -116,7 +116,7 @@ def plot_losses(train_loss, val_loss, avg_val_action_loss):
     plt.plot(val_loss, label='val_loss')
     plt.plot(avg_val_action_loss, label='val_action_loss')
     plt.legend()
-    plt.savefig("augmenttrain_plot.png")
+    plt.savefig("train_plot.png")
     plt.close()
 
 
@@ -138,8 +138,8 @@ def main():
     # You can change these hyper parameters freely, and you can add more
     num_epochs = 50
     batch_size = 128
-    save_path = "augmentcilrs_model.ckpt"
-    checkpoint = "augmentcilrs_checkpoint.pt"
+    save_path = "cilrs_model.ckpt"
+    checkpoint = "cilrs_checkpoint.pt"
 
     train_loader_left = DataLoader(train_dataset_left, batch_size=batch_size, shuffle=True,
                                    drop_last=True, num_workers=4)
