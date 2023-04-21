@@ -53,7 +53,6 @@ class AffordancePredictor(nn.Module):
 
     def forward(self, img, command, memory_stack):
         features = self.vgg16_model(img)
-        # features = features.view(-1, 512 * 7 * 7)
         features = torch.relu(features)
         features = self.fc_features(features)
         features = torch.unsqueeze(features, dim=1)
@@ -62,24 +61,11 @@ class AffordancePredictor(nn.Module):
         self.percep_memory = torch.relu(self.percep_memory)
         self.percep_memory = self.do(self.percep_memory)
 
-        if command[0] == 0:
-            affordance_lane_dist = self.blocks[0](
-                self.grus[0](self.percep_memory)[0])
-        elif command[0] == 1:
-            affordance_lane_dist = self.blocks[1](
-                self.grus[1](self.percep_memory)[0])
-        elif command[0] == 2 or command[0] == 3:
-            affordance_lane_dist = self.blocks[2](self.grus[2](self.percep_memory)[0])
+        affordance_lane_dist = self.blocks[command[0]](
+                self.grus[command[0]](self.percep_memory)[0])
 
-        if command[0] == 0:
-            affordance_angle = self.blocks[3](
-                self.grus[3](self.percep_memory)[0])
-        elif command[0] == 1:
-            affordance_angle = self.blocks[4](
-                self.grus[4](self.percep_memory)[0])
-        elif command[0] == 2 or command[0] == 3:
-            affordance_angle = self.blocks[5](
-                self.grus[5](self.percep_memory)[0])
+        affordance_angle = self.blocks[command[0]+3](
+                self.grus[command[0]+3](self.percep_memory)[0])
 
         affordance_traffic_light_distance = self.blocks[6](
             self.grus[6](self.percep_memory)[0])

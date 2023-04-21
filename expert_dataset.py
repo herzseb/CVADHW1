@@ -34,9 +34,9 @@ class ExpertDataset(Dataset):
                 
         self.img_names = (os.listdir(self.rgb_path))
         self.img_names.sort()
-        self.convert_tensor = transforms.ToTensor()
         self.transform = transform
         # pretrained resnet has a defined image preprocessing
+        self.convert_tensor = transforms.ToTensor()
         self.preprocess = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
