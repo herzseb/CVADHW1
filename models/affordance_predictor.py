@@ -16,7 +16,7 @@ class AffordancePredictor(nn.Module):
         
         self.queue_length = 10
         self.input_size = 512
-        self.hidden_size = 128
+        self.hidden_size = 256
         self.num_layers = 2
         self.drop_out = 0.2
         self.in_channel = 10
@@ -48,7 +48,7 @@ class AffordancePredictor(nn.Module):
             nn.BatchNorm1d(self.hidden_size),
             nn.ReLU(),
             nn.Dropout(self.drop_out),
-            nn.Linear(self.hidden_size, 3),
+            nn.Linear(self.hidden_size, 2),
         )
 
     def forward(self, img, command, memory_stack):

@@ -168,9 +168,9 @@ def main():
     
     loaders = [train_loader_left, train_loader_right, train_loader_straight, train_loader_followlane]
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
-    criterion_MAE = torch.nn.L1Loss()
+    criterion_MAE = torch.nn.MSELoss()
     criterion_CE = torch.nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.00001)
+    optimizer = optim.Adam(model.parameters(), lr=0.0005)
     train_losses = []
     val_losses = []
     lane_dist_losses = []
