@@ -153,8 +153,8 @@ def main():
     
 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
-    optimizer = optim.Adam(model.parameters(), lr=0.0005) #5
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+    optimizer = optim.Adam(model.parameters(), lr=0.0005, weight_decay=0.0001) #5
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.1)
     train_losses = []
     val_losses = []
     val_action_losses = []
