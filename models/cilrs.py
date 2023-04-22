@@ -10,14 +10,14 @@ class CILRS(nn.Module):
         super(CILRS, self).__init__()
         self.resnet = models.resnet18(weights='IMAGENET1K_V1')
         for param in self.resnet.parameters():
-            param.requires_grad = False
+            param.requires_grad = True
 
-        self.resnet_out = 512
+        self.resnet_out = 256
         num_ftrs = self.resnet.fc.in_features
         self.resnet.fc = nn.Linear(num_ftrs, self.resnet_out)
 
         self.dropout = 0.5  # 0.2
-        self.hidden = 256
+        self.hidden = 128
         self.hidden_speed_prediction = 128
         self.speed_features = 64
         self.feature_input = self.resnet_out + self.speed_features
@@ -32,7 +32,7 @@ class CILRS(nn.Module):
         self.speed_prediction = nn.Sequential(
             nn.ReLU(),
             nn.Linear(self.resnet_out, self.hidden_speed_prediction),
-            #nn.BatchNorm1d(self.hidden_speed_prediction),
+            nn.BatchNorm1d(self.hidden_speed_prediction),
             nn.ReLU(),
             nn.Linear(self.hidden_speed_prediction, self.hidden_speed_prediction),
             nn.ReLU(),
@@ -42,6 +42,7 @@ class CILRS(nn.Module):
         self.after_concat = nn.Sequential(
             nn.BatchNorm1d(self.feature_input),
             nn.ReLU(),
+            nn.Dropout(p=self.dropout),
             nn.Linear(self.feature_input, self.feature_output),
             nn.BatchNorm1d(self.feature_output),
             nn.ReLU(),
@@ -53,6 +54,7 @@ class CILRS(nn.Module):
                 nn.Linear(self.feature_output, self.hidden),
                 nn.BatchNorm1d(self.hidden),
                 nn.ReLU(),
+                nn.Dropout(p=self.dropout),
                 nn.Linear(self.hidden, self.hidden),
                 nn.BatchNorm1d(self.hidden),
                 nn.ReLU(),
