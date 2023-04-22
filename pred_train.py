@@ -170,7 +170,7 @@ def main():
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     criterion_MAE = torch.nn.MSELoss()
     criterion_CE = torch.nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0005)
+    optimizer = optim.Adam(model.parameters(), lr=0.00001)
     train_losses = []
     val_losses = []
     lane_dist_losses = []
