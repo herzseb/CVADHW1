@@ -10,9 +10,9 @@ class CILRS(nn.Module):
         super(CILRS, self).__init__()
         self.resnet = models.resnet18(weights='IMAGENET1K_V1')
         for param in self.resnet.parameters():
-            param.requires_grad = True
+            param.requires_grad = False
 
-        self.resnet_out = 256
+        self.resnet_out = 512
         num_ftrs = self.resnet.fc.in_features
         self.resnet.fc = nn.Linear(num_ftrs, self.resnet_out)
 
@@ -21,7 +21,7 @@ class CILRS(nn.Module):
         self.hidden_speed_prediction = 128
         self.speed_features = 64
         self.feature_input = self.resnet_out + self.speed_features
-        self.feature_output = 512
+        self.feature_output = 256
         self.speed_encoding = nn.Sequential(
             nn.Linear(1, self.speed_features),
             nn.ReLU(),
