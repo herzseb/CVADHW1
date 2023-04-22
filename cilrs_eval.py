@@ -13,8 +13,8 @@ class Evaluator():
         self.env = env
         self.config = config
         self.agent = self.load_agent()
+        self.totensor = transforms.ToTensor()
         self.preprocess = transforms.Compose([
-            transforms.ToTensor(),
             transforms.Resize(256),
             transforms.CenterCrop(224),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
@@ -28,6 +28,8 @@ class Evaluator():
     def generate_action(self, rgb, command, speed):
         # preprocess images to fit pretrained resnet 
         # batch image and speed 
+        rgb = self.totensor(rgb)
+        rgb = rgb[:,90:400,:]
         rgb = self.preprocess(rgb)
         rgb = rgb.to(device)
         rgb = torch.unsqueeze(rgb, dim=0)
@@ -44,9 +46,11 @@ class Evaluator():
         rgb = state["rgb"]
         command = state["command"]
         speed = state["speed"]
-        throttle, steer, brake = self.generate_action(rgb, command, speed)
-        brake = 0 if brake < 0 else brake
+        throttle, brake, steer = self.generate_action(rgb, command, speed)
+        brake = 0 if brake < 0.01 else brake
         print("------------------")
+        print("command", command)
+        print("speed", speed)
         action = {
             "throttle": throttle,
             "brake": brake,
