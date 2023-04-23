@@ -16,7 +16,7 @@ class AffordancePredictor(nn.Module):
         
         self.queue_length = 10
         self.input_size = 512
-        self.hidden_size = 256
+        self.hidden_size = 128
         self.num_layers = 2
         self.drop_out = 0.2
         self.in_channel = 10
