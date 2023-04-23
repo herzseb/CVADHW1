@@ -137,7 +137,7 @@ def main():
 
     # You can change these hyper parameters freely, and you can add more
     num_epochs = 50
-    batch_size = 16
+    batch_size = 64
     save_path = "cilrs_model.ckpt"
     checkpoint = "cilrs_checkpoint.pt"
 
@@ -153,7 +153,7 @@ def main():
     
 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
-    optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.005) #5
+    optimizer = optim.Adam(model.parameters(), lr=0.0005, weight_decay=0.001) #5
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.1)
     train_losses = []
     val_losses = []
